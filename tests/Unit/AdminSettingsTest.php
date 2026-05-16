@@ -465,4 +465,297 @@ class AdminSettingsTest extends TestCase {
 			'saved enabled=false must not be overwritten by a Roles-tab sanitize pass'
 		);
 	}
+
+	// =========================================================================
+	// Tests R1–R8: Restrictions tab — sanitize + registration isolation
+	// =========================================================================
+
+	/**
+	 * Helper: build a saved config that includes an enforcement subarray.
+	 *
+	 * @param array $enforcement_overrides
+	 * @return array
+	 */
+	private function enforcement_config( array $enforcement_overrides = array() ) {
+		return $this->base_config( array(
+			'enforcement' => array_merge(
+				array(
+					'blocked_caps'      => array( 'install_plugins' ),
+					'protected_plugins' => array(),
+					'screen_blocklist'  => array(),
+				),
+				$enforcement_overrides
+			),
+		) );
+	}
+
+	/**
+	 * Helper: mock get_plugins() to return the given map.
+	 *
+	 * @param array<string, array> $plugins basename => plugin data array.
+	 */
+	private function mock_get_plugins( array $plugins ) {
+		WP_Mock::userFunction( 'get_plugins', array( 'return' => $plugins ) );
+	}
+
+	// ---- R1 -------------------------------------------------------------------
+
+	/**
+	 * R1 — Valid blocked_caps (from the eleven defaults) are preserved in order.
+	 */
+	public function test_sanitize_restrictions_keeps_valid_blocked_caps() {
+		$core     = $this->make_core( $this->enforcement_config() );
+		$settings = new CH_Admin_Settings( $core );
+
+		$this->mock_get_plugins( array() );
+
+		$result = $settings->sanitize( array(
+			'enforcement' => array(
+				'blocked_caps'      => array( 'install_plugins', 'activate_plugins' ),
+				'protected_plugins' => array(),
+			),
+		) );
+
+		$this->assertSame(
+			array( 'install_plugins', 'activate_plugins' ),
+			$result['enforcement']['blocked_caps'],
+			'Valid blocked_caps must be preserved in submission order'
+		);
+	}
+
+	// ---- R2 -------------------------------------------------------------------
+
+	/**
+	 * R2 — Caps absent from the eleven defaults are silently dropped.
+	 */
+	public function test_sanitize_restrictions_drops_unknown_blocked_caps() {
+		$core     = $this->make_core( $this->enforcement_config() );
+		$settings = new CH_Admin_Settings( $core );
+
+		$this->mock_get_plugins( array() );
+
+		$result = $settings->sanitize( array(
+			'enforcement' => array(
+				'blocked_caps'      => array( 'install_plugins', 'manage_options', 'invented_cap' ),
+				'protected_plugins' => array(),
+			),
+		) );
+
+		$this->assertContains( 'install_plugins', $result['enforcement']['blocked_caps'] );
+		$this->assertNotContains( 'manage_options', $result['enforcement']['blocked_caps'],
+			'manage_options is not in the eleven defaults and must be dropped' );
+		$this->assertNotContains( 'invented_cap', $result['enforcement']['blocked_caps'],
+			'Invented caps must be dropped' );
+		$this->assertCount( 1, $result['enforcement']['blocked_caps'] );
+	}
+
+	// ---- R3 -------------------------------------------------------------------
+
+	/**
+	 * R3 — Installed plugin basenames are preserved.
+	 */
+	public function test_sanitize_restrictions_keeps_installed_protected_plugins() {
+		$core     = $this->make_core( $this->enforcement_config() );
+		$settings = new CH_Admin_Settings( $core );
+
+		$this->mock_get_plugins( array(
+			'real/real.php'         => array( 'Name' => 'Real Plugin' ),
+			'akismet/akismet.php'   => array( 'Name' => 'Akismet' ),
+		) );
+
+		$result = $settings->sanitize( array(
+			'enforcement' => array(
+				'blocked_caps'      => array(),
+				'protected_plugins' => array( 'real/real.php', 'akismet/akismet.php' ),
+			),
+		) );
+
+		$this->assertContains( 'real/real.php',       $result['enforcement']['protected_plugins'] );
+		$this->assertContains( 'akismet/akismet.php', $result['enforcement']['protected_plugins'] );
+		$this->assertCount( 2, $result['enforcement']['protected_plugins'] );
+	}
+
+	// ---- R4 -------------------------------------------------------------------
+
+	/**
+	 * R4 — Plugin basenames absent from get_plugins() are silently dropped.
+	 */
+	public function test_sanitize_restrictions_drops_uninstalled_protected_plugins() {
+		$core     = $this->make_core( $this->enforcement_config() );
+		$settings = new CH_Admin_Settings( $core );
+
+		$this->mock_get_plugins( array(
+			'real/real.php' => array( 'Name' => 'Real Plugin' ),
+		) );
+
+		$result = $settings->sanitize( array(
+			'enforcement' => array(
+				'blocked_caps'      => array(),
+				'protected_plugins' => array( 'real/real.php', 'fake/fake.php' ),
+			),
+		) );
+
+		$this->assertSame( array( 'real/real.php' ), $result['enforcement']['protected_plugins'] );
+		$this->assertNotContains( 'fake/fake.php', $result['enforcement']['protected_plugins'] );
+	}
+
+	// ---- R5 -------------------------------------------------------------------
+
+	/**
+	 * R5 — Empty submissions produce empty arrays, not nulls or missing keys.
+	 */
+	public function test_sanitize_restrictions_empty_arrays_produce_empty_arrays() {
+		$core     = $this->make_core( $this->enforcement_config() );
+		$settings = new CH_Admin_Settings( $core );
+
+		$this->mock_get_plugins( array() );
+
+		$result = $settings->sanitize( array(
+			'enforcement' => array(
+				'blocked_caps'      => array(),
+				'protected_plugins' => array(),
+			),
+		) );
+
+		$this->assertArrayHasKey( 'blocked_caps',      $result['enforcement'] );
+		$this->assertArrayHasKey( 'protected_plugins', $result['enforcement'] );
+		$this->assertSame( array(), $result['enforcement']['blocked_caps'] );
+		$this->assertSame( array(), $result['enforcement']['protected_plugins'] );
+	}
+
+	// ---- R6 -------------------------------------------------------------------
+
+	/**
+	 * R6 — Subkeys not in the Restrictions partial (screen_blocklist) and
+	 * top-level keys not in the Restrictions partial (protected_roles) are
+	 * both preserved from the saved config.
+	 */
+	public function test_sanitize_restrictions_preserves_other_config_subkeys() {
+		$saved = $this->base_config( array(
+			'protected_roles' => array( 'subscriber' ),
+			'enforcement'     => array(
+				'blocked_caps'      => array( 'install_plugins' ),
+				'protected_plugins' => array(),
+				'screen_blocklist'  => array( 'subscriber' => array( 'some-screen.php' ) ),
+			),
+		) );
+
+		// Single saved config — same value on every get_option call.
+		$core     = $this->make_core( $saved );
+		$settings = new CH_Admin_Settings( $core );
+
+		$this->mock_get_plugins( array() );
+
+		$result = $settings->sanitize( array(
+			'enforcement' => array(
+				'blocked_caps'      => array( 'install_plugins' ),
+				'protected_plugins' => array(),
+			),
+		) );
+
+		// screen_blocklist (enforcement subkey not in partial) must be preserved.
+		$this->assertSame(
+			array( 'subscriber' => array( 'some-screen.php' ) ),
+			$result['enforcement']['screen_blocklist'],
+			'screen_blocklist must be preserved when not in the Restrictions partial'
+		);
+
+		// protected_roles (top-level key not in partial) must be preserved.
+		$this->assertSame(
+			array( 'subscriber' ),
+			$result['protected_roles'],
+			'protected_roles must be preserved when not in the Restrictions partial'
+		);
+	}
+
+	// ---- R7 -------------------------------------------------------------------
+
+	/**
+	 * R7 — On the restrictions tab, section and both fields are registered.
+	 */
+	public function test_register_settings_with_restrictions_tab_registers_section_and_fields() {
+		$_GET['tab'] = 'restrictions';
+
+		$core     = $this->make_core();
+		$settings = new CH_Admin_Settings( $core );
+
+		$section_calls = array();
+		$field_calls   = array();
+		WP_Mock::userFunction( 'register_setting' );
+		WP_Mock::userFunction( 'add_settings_section', array(
+			'return' => static function () use ( &$section_calls ) {
+				$section_calls[] = func_get_args();
+			},
+		) );
+		WP_Mock::userFunction( 'add_settings_field', array(
+			'return' => static function () use ( &$field_calls ) {
+				$field_calls[] = func_get_args();
+			},
+		) );
+
+		$settings->register_settings();
+
+		$this->assertCount( 1, $section_calls,
+			'add_settings_section must be called once on restrictions tab' );
+		$this->assertSame( 'client-handoff-restrictions', $section_calls[0][3],
+			'Section must target page client-handoff-restrictions' );
+
+		$this->assertCount( 2, $field_calls,
+			'add_settings_field must be called twice on restrictions tab' );
+		foreach ( $field_calls as $i => $args ) {
+			$this->assertSame( 'client-handoff-restrictions', $args[3],
+				"Field call $i must target page client-handoff-restrictions" );
+		}
+
+		$field_ids = array_column( $field_calls, 0 );
+		$this->assertContains( 'ch_blocked_caps',      $field_ids );
+		$this->assertContains( 'ch_protected_plugins',  $field_ids );
+	}
+
+	// ---- R8 -------------------------------------------------------------------
+
+	/**
+	 * R8 — On the roles tab, restrictions section and fields are NOT registered.
+	 *
+	 * Proves the two tabs' registrations are isolated — no cross-contamination.
+	 */
+	public function test_register_settings_with_roles_tab_does_not_register_restrictions_fields() {
+		$_GET['tab'] = 'roles';
+
+		$core     = $this->make_core();
+		$settings = new CH_Admin_Settings( $core );
+
+		$section_calls = array();
+		$field_calls   = array();
+		WP_Mock::userFunction( 'register_setting' );
+		WP_Mock::userFunction( 'add_settings_section', array(
+			'return' => static function () use ( &$section_calls ) {
+				$section_calls[] = func_get_args();
+			},
+		) );
+		WP_Mock::userFunction( 'add_settings_field', array(
+			'return' => static function () use ( &$field_calls ) {
+				$field_calls[] = func_get_args();
+			},
+		) );
+
+		$settings->register_settings();
+
+		// Exactly one section, and it targets roles not restrictions.
+		$this->assertCount( 1, $section_calls );
+		$this->assertSame( 'client-handoff-roles', $section_calls[0][3],
+			'Section must target client-handoff-roles, not client-handoff-restrictions' );
+
+		// Exactly two fields, both targeting the roles page.
+		$this->assertCount( 2, $field_calls );
+		foreach ( $field_calls as $i => $args ) {
+			$this->assertSame( 'client-handoff-roles', $args[3],
+				"Field call $i must target client-handoff-roles, not client-handoff-restrictions" );
+		}
+
+		// Restrictions field IDs must not appear.
+		$field_ids = array_column( $field_calls, 0 );
+		$this->assertNotContains( 'ch_blocked_caps',     $field_ids );
+		$this->assertNotContains( 'ch_protected_plugins', $field_ids );
+	}
 }
