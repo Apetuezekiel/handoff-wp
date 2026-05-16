@@ -213,10 +213,16 @@ class AdminSettingsTest extends TestCase {
 	}
 
 	/**
-	 * Test E — on a non-roles tab, register_setting fires but section/fields do not.
+	 * Test E — on a placeholder tab (help-notes), register_setting fires but
+	 * no section or field registrations are made.
+	 *
+	 * Uses 'help-notes' rather than 'dashboard' — dashboard is now fully wired
+	 * and registers its own section and five fields. 'help-notes' has no wired
+	 * registration block, making it the correct representative of "a tab with
+	 * no active registration".
 	 */
 	public function test_register_settings_with_non_roles_tab_skips_section_and_fields() {
-		$_GET['tab'] = 'dashboard';
+		$_GET['tab'] = 'help-notes';
 
 		$core     = $this->make_core();
 		$settings = new CH_Admin_Settings( $core );
@@ -243,8 +249,8 @@ class AdminSettingsTest extends TestCase {
 		$settings->register_settings();
 
 		$this->assertCount( 1, $reg_calls, 'register_setting must fire regardless of active tab' );
-		$this->assertEmpty( $section_calls, 'add_settings_section must not fire on non-roles tab' );
-		$this->assertEmpty( $field_calls,   'add_settings_field must not fire on non-roles tab' );
+		$this->assertEmpty( $section_calls, 'add_settings_section must not fire on a placeholder tab' );
+		$this->assertEmpty( $field_calls,   'add_settings_field must not fire on a placeholder tab' );
 	}
 
 	/**
@@ -757,5 +763,370 @@ class AdminSettingsTest extends TestCase {
 		$field_ids = array_column( $field_calls, 0 );
 		$this->assertNotContains( 'ch_blocked_caps',     $field_ids );
 		$this->assertNotContains( 'ch_protected_plugins', $field_ids );
+	}
+
+	// =========================================================================
+	// Tests D1–D8: Dashboard tab — sanitize + registration
+	// =========================================================================
+
+	/**
+	 * Helper: base config that includes saved protected_roles and enforcement
+	 * sub-keys, used by the cross-tab isolation test (D6).
+	 *
+	 * @param array $overrides
+	 * @return array
+	 */
+	private function dashboard_isolation_config( array $overrides = array() ): array {
+		return array_merge(
+			array(
+				'enabled'         => true,
+				'protected_roles' => array( 'subscriber' ),
+				'admin_roles'     => array(),
+				'enforcement'     => array(
+					'blocked_caps'      => array( 'install_plugins' ),
+					'protected_plugins' => array(),
+				),
+				'dashboard'       => array(
+					'enabled'           => false,
+					'welcome_message'   => '',
+					'quick_links'       => array(),
+					'developer_contact' => array( 'name' => '', 'email' => '', 'url' => '' ),
+					'show_site_status'  => false,
+				),
+			),
+			$overrides
+		);
+	}
+
+	// -------------------------------------------------------------------------
+	// D1 — enabled and show_site_status boolean round-trip
+	// -------------------------------------------------------------------------
+
+	/**
+	 * D1 — sanitize_dashboard maps checkbox presence/absence to true/false.
+	 *
+	 * Two sub-cases share one mock setup:
+	 *   Sub-case A: both flags present ('1') → both true in result.
+	 *   Sub-case B: both flags absent → both false in result.
+	 *
+	 * No call-counter closure needed — both sub-cases run synchronously
+	 * against the same make_core() instance because the config has no effect
+	 * on these boolean fields.
+	 */
+	public function test_sanitize_dashboard_enabled_and_status_flags_round_trip() {
+		$core     = $this->make_core( $this->base_config() );
+		$settings = new CH_Admin_Settings( $core );
+
+		// Sub-case A: flags present.
+		$result_a = $settings->sanitize( array(
+			'dashboard' => array(
+				'enabled'          => '1',
+				'show_site_status' => '1',
+			),
+		) );
+		$this->assertTrue( $result_a['dashboard']['enabled'],          'enabled must be true when value present' );
+		$this->assertTrue( $result_a['dashboard']['show_site_status'], 'show_site_status must be true when value present' );
+
+		// Sub-case B: flags absent.
+		$result_b = $settings->sanitize( array(
+			'dashboard' => array(
+				// neither key present — unchecked checkbox sends nothing
+			),
+		) );
+		$this->assertFalse( $result_b['dashboard']['enabled'],          'enabled must be false when key absent' );
+		$this->assertFalse( $result_b['dashboard']['show_site_status'], 'show_site_status must be false when key absent' );
+	}
+
+	// -------------------------------------------------------------------------
+	// D2 — welcome_message sanitized via wp_kses_post
+	// -------------------------------------------------------------------------
+
+	/**
+	 * D2 — welcome_message passes through wp_kses_post, stripping <script>.
+	 *
+	 * The bootstrap stub for wp_kses_post calls strip_tags() with an allowed-
+	 * tag list that excludes <script>. This confirms the sanitization hook-up
+	 * without needing WP's full kses allowlist.
+	 */
+	public function test_sanitize_dashboard_welcome_message_strips_script_via_kses() {
+		$core     = $this->make_core( $this->base_config() );
+		$settings = new CH_Admin_Settings( $core );
+
+		$result = $settings->sanitize( array(
+			'dashboard' => array(
+				'welcome_message' => '<p>Hi</p><script>alert(1)</script>',
+			),
+		) );
+
+		$this->assertStringContainsString(
+			'<p>Hi</p>',
+			$result['dashboard']['welcome_message'],
+			'Allowed HTML must survive wp_kses_post'
+		);
+		$this->assertStringNotContainsString(
+			'<script',
+			$result['dashboard']['welcome_message'],
+			'<script> tag must be stripped by wp_kses_post'
+		);
+	}
+
+	// -------------------------------------------------------------------------
+	// D3 — quick_links: empty rows dropped
+	// -------------------------------------------------------------------------
+
+	/**
+	 * D3 — sanitize_dashboard drops rows where both label AND url are empty.
+	 *
+	 * Five input rows — two real, three blank. Result must have exactly two
+	 * entries in submission order. The icon-only row is dropped because icon
+	 * alone does not make an actionable quick link.
+	 */
+	public function test_sanitize_dashboard_drops_empty_quick_link_rows() {
+		$core     = $this->make_core( $this->base_config() );
+		$settings = new CH_Admin_Settings( $core );
+
+		$result = $settings->sanitize( array(
+			'dashboard' => array(
+				'quick_links' => array(
+					array( 'label' => 'Posts', 'url' => '/edit.php',                  'icon' => 'dashicons-edit' ),
+					array( 'label' => '',      'url' => '',                            'icon' => '' ),
+					array( 'label' => 'Pages', 'url' => '/edit.php?post_type=page',   'icon' => '' ),
+					array( 'label' => '',      'url' => '',                            'icon' => '' ),
+					array( 'label' => '',      'url' => '',                            'icon' => '' ),
+				),
+			),
+		) );
+
+		$links = $result['dashboard']['quick_links'];
+
+		$this->assertCount( 2, $links, 'Only two populated rows must survive; three blank rows must be dropped' );
+		$this->assertSame( 'Posts', $links[0]['label'], 'First link must be Posts' );
+		$this->assertSame( 'Pages', $links[1]['label'], 'Second link must be Pages' );
+	}
+
+	// -------------------------------------------------------------------------
+	// D4 — quick_links: populated rows preserved with correct field values
+	// -------------------------------------------------------------------------
+
+	/**
+	 * D4 — sanitize_dashboard preserves all three field values for each row.
+	 *
+	 * Three real rows are submitted. All three must survive with their label,
+	 * url, and icon intact (the identity stubs for sanitize_text_field /
+	 * esc_url_raw / sanitize_html_class pass values through unchanged in the
+	 * test environment, so the strings remain assertable).
+	 */
+	public function test_sanitize_dashboard_keeps_populated_quick_link_rows() {
+		$core     = $this->make_core( $this->base_config() );
+		$settings = new CH_Admin_Settings( $core );
+
+		$result = $settings->sanitize( array(
+			'dashboard' => array(
+				'quick_links' => array(
+					array( 'label' => 'Posts',    'url' => '/edit.php',                'icon' => 'dashicons-admin-post' ),
+					array( 'label' => 'Media',    'url' => '/upload.php',              'icon' => 'dashicons-admin-media' ),
+					array( 'label' => 'Comments', 'url' => '/edit-comments.php',       'icon' => 'dashicons-admin-comments' ),
+				),
+			),
+		) );
+
+		$links = $result['dashboard']['quick_links'];
+
+		$this->assertCount( 3, $links, 'All three populated rows must be preserved' );
+		$this->assertSame( 'Posts',    $links[0]['label'] );
+		$this->assertSame( '/edit.php', $links[0]['url'] );
+		$this->assertSame( 'dashicons-admin-post', $links[0]['icon'] );
+		$this->assertSame( 'Media',    $links[1]['label'] );
+		$this->assertSame( 'Comments', $links[2]['label'] );
+	}
+
+	// -------------------------------------------------------------------------
+	// D5 — developer_contact: three-key shape always returned
+	// -------------------------------------------------------------------------
+
+	/**
+	 * D5 — sanitize_dashboard always returns all three developer_contact keys.
+	 *
+	 * Sub-case A: all three keys present → values preserved.
+	 * Sub-case B: developer_contact is an empty array → all three keys still
+	 *             exist as empty strings. The saved shape must never have
+	 *             missing keys (CH_Dashboard reads them unconditionally).
+	 */
+	public function test_sanitize_dashboard_developer_contact_preserves_three_keys() {
+		$core     = $this->make_core( $this->base_config() );
+		$settings = new CH_Admin_Settings( $core );
+
+		// Sub-case A: all keys provided.
+		$result_a = $settings->sanitize( array(
+			'dashboard' => array(
+				'developer_contact' => array(
+					'name'  => 'Dev Studio',
+					'email' => 'dev@example.com',
+					'url'   => 'https://dev.example.com',
+				),
+			),
+		) );
+
+		$contact_a = $result_a['dashboard']['developer_contact'];
+		$this->assertArrayHasKey( 'name',  $contact_a );
+		$this->assertArrayHasKey( 'email', $contact_a );
+		$this->assertArrayHasKey( 'url',   $contact_a );
+		$this->assertSame( 'Dev Studio',           $contact_a['name'] );
+		$this->assertSame( 'dev@example.com',      $contact_a['email'] );
+		$this->assertSame( 'https://dev.example.com', $contact_a['url'] );
+
+		// Sub-case B: no keys provided — shape must still have all three.
+		$result_b = $settings->sanitize( array(
+			'dashboard' => array(
+				'developer_contact' => array(),
+			),
+		) );
+
+		$contact_b = $result_b['dashboard']['developer_contact'];
+		$this->assertArrayHasKey( 'name',  $contact_b, 'name key must always exist' );
+		$this->assertArrayHasKey( 'email', $contact_b, 'email key must always exist' );
+		$this->assertArrayHasKey( 'url',   $contact_b, 'url key must always exist' );
+		$this->assertSame( '', $contact_b['name'],  'name must default to empty string' );
+		$this->assertSame( '', $contact_b['email'], 'email must default to empty string' );
+		$this->assertSame( '', $contact_b['url'],   'url must default to empty string' );
+	}
+
+	// -------------------------------------------------------------------------
+	// D6 — cross-tab isolation: dashboard save preserves roles + enforcement
+	// -------------------------------------------------------------------------
+
+	/**
+	 * D6 — submitting a dashboard-only partial does not clobber other keys.
+	 *
+	 * Saved config has protected_roles=['subscriber'] and
+	 * enforcement.blocked_caps=['install_plugins']. A dashboard-only POST must
+	 * not touch either. Mirrors R6 (restrictions save preserves roles).
+	 */
+	public function test_sanitize_dashboard_preserves_other_config_subkeys() {
+		$core     = $this->make_core( $this->dashboard_isolation_config() );
+		$settings = new CH_Admin_Settings( $core );
+
+		$result = $settings->sanitize( array(
+			'dashboard' => array(
+				'enabled' => '1',
+			),
+		) );
+
+		$this->assertSame(
+			array( 'subscriber' ),
+			$result['protected_roles'],
+			'protected_roles must be preserved when saving only dashboard fields'
+		);
+		$this->assertSame(
+			array( 'install_plugins' ),
+			$result['enforcement']['blocked_caps'],
+			'enforcement.blocked_caps must be preserved when saving only dashboard fields'
+		);
+	}
+
+	// -------------------------------------------------------------------------
+	// D7 — register_settings on dashboard tab registers 1 section + 5 fields
+	// -------------------------------------------------------------------------
+
+	/**
+	 * D7 — on the dashboard tab, register_settings registers the correct
+	 * section and exactly five fields, all targeting 'client-handoff-dashboard'.
+	 */
+	public function test_register_settings_with_dashboard_tab_registers_section_and_five_fields() {
+		$_GET['tab'] = 'dashboard';
+
+		$core     = $this->make_core();
+		$settings = new CH_Admin_Settings( $core );
+
+		$reg_calls     = array();
+		$section_calls = array();
+		$field_calls   = array();
+
+		WP_Mock::userFunction( 'register_setting', array(
+			'return' => static function () use ( &$reg_calls ) {
+				$reg_calls[] = func_get_args();
+			},
+		) );
+		WP_Mock::userFunction( 'add_settings_section', array(
+			'return' => static function () use ( &$section_calls ) {
+				$section_calls[] = func_get_args();
+			},
+		) );
+		WP_Mock::userFunction( 'add_settings_field', array(
+			'return' => static function () use ( &$field_calls ) {
+				$field_calls[] = func_get_args();
+			},
+		) );
+
+		$settings->register_settings();
+
+		// Exactly one section targeting client-handoff-dashboard.
+		$this->assertCount( 1, $section_calls, 'Exactly one section must be registered for the dashboard tab' );
+		$this->assertSame(
+			'client-handoff-dashboard',
+			$section_calls[0][3],
+			'Section must target client-handoff-dashboard'
+		);
+
+		// Exactly five fields, all targeting client-handoff-dashboard.
+		$this->assertCount( 5, $field_calls, 'Exactly five fields must be registered for the dashboard tab' );
+		foreach ( $field_calls as $i => $args ) {
+			$this->assertSame(
+				'client-handoff-dashboard',
+				$args[3],
+				"Field call $i must target client-handoff-dashboard"
+			);
+		}
+
+		// The five expected field IDs are present.
+		$field_ids = array_column( $field_calls, 0 );
+		$this->assertContains( 'ch_dashboard_enabled',  $field_ids );
+		$this->assertContains( 'ch_welcome_message',    $field_ids );
+		$this->assertContains( 'ch_quick_links',        $field_ids );
+		$this->assertContains( 'ch_developer_contact',  $field_ids );
+		$this->assertContains( 'ch_show_site_status',   $field_ids );
+	}
+
+	// -------------------------------------------------------------------------
+	// D8 — dashboard tab registration does not register roles or restrictions
+	// -------------------------------------------------------------------------
+
+	/**
+	 * D8 — on the dashboard tab, no roles or restrictions section/field calls
+	 * targeting 'client-handoff-roles' or 'client-handoff-restrictions' are made.
+	 *
+	 * Symmetric with R8 (restrictions tab must not register roles fields).
+	 */
+	public function test_register_settings_with_dashboard_tab_does_not_register_other_tabs_fields() {
+		$_GET['tab'] = 'dashboard';
+
+		$core     = $this->make_core();
+		$settings = new CH_Admin_Settings( $core );
+
+		$section_calls = array();
+		$field_calls   = array();
+
+		WP_Mock::userFunction( 'register_setting' );
+		WP_Mock::userFunction( 'add_settings_section', array(
+			'return' => static function () use ( &$section_calls ) {
+				$section_calls[] = func_get_args();
+			},
+		) );
+		WP_Mock::userFunction( 'add_settings_field', array(
+			'return' => static function () use ( &$field_calls ) {
+				$field_calls[] = func_get_args();
+			},
+		) );
+
+		$settings->register_settings();
+
+		// No section or field must target the roles or restrictions page slugs.
+		$section_pages = array_column( $section_calls, 3 );
+		$this->assertNotContains( 'client-handoff-roles',        $section_pages, 'Roles section must not be registered on the dashboard tab' );
+		$this->assertNotContains( 'client-handoff-restrictions', $section_pages, 'Restrictions section must not be registered on the dashboard tab' );
+
+		$field_pages = array_column( $field_calls, 3 );
+		$this->assertNotContains( 'client-handoff-roles',        $field_pages, 'Roles fields must not be registered on the dashboard tab' );
+		$this->assertNotContains( 'client-handoff-restrictions', $field_pages, 'Restrictions fields must not be registered on the dashboard tab' );
 	}
 }
