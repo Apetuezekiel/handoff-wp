@@ -108,6 +108,59 @@ if ( ! function_exists( 'get_bloginfo' ) ) {
 		return (string) $show;
 	}
 }
+if ( ! function_exists( 'admin_url' ) ) {
+	/**
+	 * Stub for admin_url: returns a predictable absolute URL for the wp-admin
+	 * directory, optionally with a path appended. Renderer tests assert the
+	 * returned value appears in output; they do not depend on a real WP install.
+	 */
+	function admin_url( $path = '', $scheme = 'admin' ) {
+		return 'http://example.test/wp-admin/' . ltrim( (string) $path, '/' );
+	}
+}
+if ( ! function_exists( 'settings_fields' ) ) {
+	/**
+	 * Stub for settings_fields: echoes a marker so tests can assert the right
+	 * option group was passed. Real WP outputs hidden nonce/action fields;
+	 * the unit layer verifies only that the call was made with the right group.
+	 */
+	function settings_fields( $option_group ) {
+		echo '<!-- settings_fields:' . $option_group . ' -->';
+	}
+}
+if ( ! function_exists( 'do_settings_sections' ) ) {
+	/**
+	 * Stub for do_settings_sections: echoes a marker so tests can assert the
+	 * right page slug was passed.
+	 */
+	function do_settings_sections( $page ) {
+		echo '<!-- do_settings_sections:' . $page . ' -->';
+	}
+}
+if ( ! function_exists( 'submit_button' ) ) {
+	/**
+	 * Stub for submit_button: echoes a minimal <input type="submit"> so tests
+	 * can assert the button appears in the output. The data-type attribute
+	 * carries $type so tests can distinguish primary vs secondary buttons.
+	 */
+	function submit_button( $text = 'Save Changes', $type = 'primary', $name = 'submit', $wrap = true, $other_attributes = null ) {
+		echo '<input type="submit" value="' . htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' ) . '" data-type="' . htmlspecialchars( (string) $type, ENT_QUOTES, 'UTF-8' ) . '">';
+	}
+}
+if ( ! function_exists( 'wp_nonce_field' ) ) {
+	/**
+	 * Stub for wp_nonce_field: echoes a marker carrying the action name so
+	 * tests can assert the right nonce action was requested. Suppresses output
+	 * when $echo is false, matching real WP behaviour.
+	 */
+	function wp_nonce_field( $action = -1, $name = '_wpnonce', $referer = true, $echo = true ) {
+		$marker = '<!-- wp_nonce_field:' . $action . ' -->';
+		if ( $echo ) {
+			echo $marker;
+		}
+		return $marker;
+	}
+}
 
 WP_Mock::bootstrap();
 
