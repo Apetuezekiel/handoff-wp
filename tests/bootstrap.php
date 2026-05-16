@@ -129,3 +129,4 @@ if ( ! class_exists( 'WP_Screen' ) ) {
 
 // ---- Classes under test -----------------------------------------------------
 require_once dirname( __DIR__ ) . '/includes/class-ch-core.php';
+require_once dirname( __DIR__ ) . '/includes/class-ch-enforcer.php';
