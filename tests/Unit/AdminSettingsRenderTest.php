@@ -456,4 +456,139 @@ class AdminSettingsRenderTest extends TestCase {
 			);
 		}
 	}
+
+	// =========================================================================
+	// B1 — render_export_import_section: export form action and nonce
+	// =========================================================================
+
+	/**
+	 * B1 — render_export_import_section emits an export form with the correct
+	 * admin-post action value and matching nonce field.
+	 *
+	 * Mutation: changing 'ch_export_config' in the renderer (either the hidden
+	 * action input or the wp_nonce_field call) causes this test to fail.
+	 */
+	public function test_render_export_import_section_outputs_export_form_with_correct_action() {
+		// Ensure notice branches are not triggered.
+		unset( $_GET['ch_import_success'], $_GET['ch_import_error'] );
+
+		$core     = $this->make_core();
+		$settings = new CH_Admin_Settings( $core );
+
+		$html = $this->capture( array( $settings, 'render_export_import_section' ) );
+
+		$this->assertStringContainsString(
+			'<input type="hidden" name="action" value="ch_export_config">',
+			$html,
+			'Export form must post action=ch_export_config to admin-post.php'
+		);
+		$this->assertStringContainsString(
+			'<!-- wp_nonce_field:ch_export_config -->',
+			$html,
+			'Export form must request a nonce for the ch_export_config action'
+		);
+	}
+
+	// =========================================================================
+	// B2 — render_export_import_section: import form upload field and nonce
+	// =========================================================================
+
+	/**
+	 * B2 — render_export_import_section emits an import form with enctype,
+	 * file input, the correct admin-post action, and the matching nonce field.
+	 *
+	 * Mutation: removing the file input, dropping the enctype attribute, or
+	 * changing the action name fails this test.
+	 */
+	public function test_render_export_import_section_outputs_import_form_with_upload_field() {
+		unset( $_GET['ch_import_success'], $_GET['ch_import_error'] );
+
+		$core     = $this->make_core();
+		$settings = new CH_Admin_Settings( $core );
+
+		$html = $this->capture( array( $settings, 'render_export_import_section' ) );
+
+		$this->assertStringContainsString(
+			'enctype="multipart/form-data"',
+			$html,
+			'Import form must declare multipart/form-data enctype for file upload'
+		);
+		$this->assertStringContainsString(
+			'type="file" name="ch_config_file"',
+			$html,
+			'Import form must include a file input named ch_config_file'
+		);
+		$this->assertStringContainsString(
+			'<input type="hidden" name="action" value="ch_import_config">',
+			$html,
+			'Import form must post action=ch_import_config to admin-post.php'
+		);
+		$this->assertStringContainsString(
+			'<!-- wp_nonce_field:ch_import_config -->',
+			$html,
+			'Import form must request a nonce for the ch_import_config action'
+		);
+	}
+
+	// =========================================================================
+	// B3 — render_rerun_setup_section: null guard emits nothing
+	// =========================================================================
+
+	/**
+	 * B3 — render_rerun_setup_section emits no output when CH_Admin_Settings
+	 * was constructed without a setup flow (null default).
+	 *
+	 * This is the regression test for the null-check guard introduced in the
+	 * Re-run Setup pass. Without the guard the section would always render,
+	 * potentially on sites where no setup flow instance exists.
+	 */
+	public function test_render_rerun_setup_section_outputs_nothing_when_setup_flow_is_null() {
+		$core     = $this->make_core();
+		// Explicitly no setup_flow argument — null is the default.
+		$settings = new CH_Admin_Settings( $core );
+
+		$html = $this->capture( array( $settings, 'render_rerun_setup_section' ) );
+
+		$this->assertStringNotContainsString(
+			'<form',
+			$html,
+			'No form must be rendered when setup_flow is null'
+		);
+	}
+
+	// =========================================================================
+	// B4 — render_rerun_setup_section: emits rerun marker when flow is present
+	// =========================================================================
+
+	/**
+	 * B4 — render_rerun_setup_section emits the _ch_setup_rerun hidden input
+	 * and the settings_fields nonce marker when a setup flow is present.
+	 *
+	 * Mutation: removing the hidden marker input or the settings_fields call
+	 * fails this test. The hidden input is the load-bearing element — without
+	 * it sanitize() never receives the rerun signal.
+	 */
+	public function test_render_rerun_setup_section_outputs_rerun_marker_when_setup_flow_present() {
+		$core       = $this->make_core();
+		$setup_flow = new CH_Setup_Flow( $core );
+		$settings   = new CH_Admin_Settings( $core, $setup_flow );
+
+		$html = $this->capture( array( $settings, 'render_rerun_setup_section' ) );
+
+		$this->assertStringContainsString(
+			'name="client_handoff_config[_ch_setup_rerun]"',
+			$html,
+			'Re-run section must include a hidden input for the _ch_setup_rerun marker'
+		);
+		$this->assertStringContainsString(
+			'value="1"',
+			$html,
+			'The _ch_setup_rerun hidden input must have value="1"'
+		);
+		$this->assertStringContainsString(
+			'<!-- settings_fields:client_handoff_config -->',
+			$html,
+			'Re-run section must call settings_fields with the plugin option group'
+		);
+	}
 }
