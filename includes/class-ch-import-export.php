@@ -90,7 +90,7 @@ class CH_Import_Export {
 
 		$config   = $this->core->get_config();
 		$json     = json_encode( $config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
-		$filename = 'client-handoff-config-' . date( 'Y-m-d' ) . '.json';
+		$filename = 'client-handoff-config-' . gmdate( 'Y-m-d' ) . '.json';
 
 		header( 'Content-Type: application/json' );
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );

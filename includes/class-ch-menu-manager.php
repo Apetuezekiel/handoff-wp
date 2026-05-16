@@ -197,7 +197,7 @@ class CH_Menu_Manager {
 
 				$snapshot['top_level'][] = array(
 					'slug'  => $slug,
-					'label' => strip_tags( isset( $entry[0] ) ? (string) $entry[0] : '' ),
+					'label' => wp_strip_all_tags( isset( $entry[0] ) ? (string) $entry[0] : '' ),
 				);
 			}
 		}
@@ -216,7 +216,7 @@ class CH_Menu_Manager {
 					}
 					$children[] = array(
 						'slug'  => $child_slug,
-						'label' => strip_tags( isset( $item[0] ) ? (string) $item[0] : '' ),
+						'label' => wp_strip_all_tags( isset( $item[0] ) ? (string) $item[0] : '' ),
 					);
 				}
 
