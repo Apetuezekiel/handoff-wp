@@ -138,7 +138,7 @@ class CH_Plugin_Protection {
 	 * in the file docblock and brief § 3.4.
 	 */
 	public function intercept_plugin_action() {
-		$action = isset( $_REQUEST['action'] ) ? (string) $_REQUEST['action'] : '';
+		$action = isset( $_REQUEST['action'] ) ? sanitize_key( wp_unslash( $_REQUEST['action'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Intercept fires before WP's own nonce check; we only inspect the action name.
 
 		if ( ! in_array( $action, array( 'deactivate', 'deactivate-selected', 'delete-selected' ), true ) ) {
 			return;
@@ -165,7 +165,7 @@ class CH_Plugin_Protection {
 		}
 
 		if ( 'deactivate' === $action ) {
-			$plugin = isset( $_REQUEST['plugin'] ) ? (string) $_REQUEST['plugin'] : '';
+			$plugin = isset( $_REQUEST['plugin'] ) ? sanitize_text_field( wp_unslash( $_REQUEST['plugin'] ) ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- See above; plugin basenames contain slashes that sanitize_key would strip.
 			if ( in_array( $plugin, $protected_plugins, true ) ) {
 				$this->die_blocked();
 				return; // Unreachable after wp_die(); explicit for static analysis.
@@ -173,8 +173,8 @@ class CH_Plugin_Protection {
 		} else {
 			// action=deactivate-selected or action=delete-selected.
 			$checked = isset( $_REQUEST['checked'] ) && is_array( $_REQUEST['checked'] )
-				? $_REQUEST['checked']
-				: array();
+				? array_map( 'sanitize_text_field', wp_unslash( $_REQUEST['checked'] ) )
+				: array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- See above.
 
 			foreach ( $checked as $plugin ) {
 				if ( in_array( (string) $plugin, $protected_plugins, true ) ) {
@@ -235,7 +235,7 @@ class CH_Plugin_Protection {
 		}
 
 		wp_die(
-			$message,
+			wp_kses_post( $message ),
 			esc_html( __( 'Access Restricted', 'client-handoff' ) ),
 			array( 'response' => 403 )
 		);

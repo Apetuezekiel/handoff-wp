@@ -162,6 +162,17 @@ if ( ! function_exists( 'wp_nonce_field' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_unslash' ) ) {
+	function wp_unslash( $value ) {
+		return $value;
+	}
+}
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+	function wp_strip_all_tags( $string, $remove_breaks = false ) {
+		return strip_tags( (string) $string );
+	}
+}
+
 WP_Mock::bootstrap();
 
 // ---- Minimal WordPress class stubs -----------------------------------------

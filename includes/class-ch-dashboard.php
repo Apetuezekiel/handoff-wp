@@ -176,14 +176,11 @@ class CH_Dashboard {
 			echo '<h3>' . esc_html( __( 'Quick Actions', 'client-handoff' ) ) . '</h3>';
 			echo '<div class="ch-quick-links">';
 			foreach ( $quick_links as $link ) {
-				$label = isset( $link['label'] ) ? esc_html( $link['label'] )  : '';
-				$url   = isset( $link['url'] )   ? esc_url( $link['url'] )     : '#';
-				$icon  = isset( $link['icon'] )  ? esc_attr( $link['icon'] )   : 'dashicons-admin-generic';
 				printf(
 					'<a class="ch-quick-link" href="%s"><span class="dashicons %s"></span> %s</a>',
-					$url,
-					$icon,
-					$label
+					esc_url( isset( $link['url'] )   ? $link['url']   : '#' ),
+					esc_attr( isset( $link['icon'] )  ? $link['icon']  : 'dashicons-admin-generic' ),
+					esc_html( isset( $link['label'] ) ? $link['label'] : '' )
 				);
 			}
 			echo '</div>';

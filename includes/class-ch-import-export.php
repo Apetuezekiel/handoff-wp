@@ -90,7 +90,7 @@ class CH_Import_Export {
 
 		$config   = $this->core->get_config();
 		$json     = json_encode( $config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
-		$filename = 'client-handoff-config-' . date( 'Y-m-d' ) . '.json';
+		$filename = 'client-handoff-config-' . gmdate( 'Y-m-d' ) . '.json';
 
 		header( 'Content-Type: application/json' );
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
@@ -119,7 +119,7 @@ class CH_Import_Export {
 		$settings_url = admin_url( 'admin.php?page=client-handoff' );
 
 		// ---- File validation ----------------------------------------------------
-		$file = isset( $_FILES['ch_config_file'] ) ? $_FILES['ch_config_file'] : null;
+		$file = isset( $_FILES['ch_config_file'] ) ? $_FILES['ch_config_file'] : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is server-side upload metadata; individual field access is structurally bounded.
 
 		if (
 			null === $file ||

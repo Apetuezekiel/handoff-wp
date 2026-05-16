@@ -252,13 +252,13 @@ class CH_Admin_Settings {
 	 * @return string
 	 */
 	public function get_active_tab() {
-		if ( isset( $_GET['ch_step'] ) ) {
-			$step = sanitize_key( $_GET['ch_step'] );
+		if ( isset( $_GET['ch_step'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display routing; form submission goes through options.php with its own nonce.
+			$step = sanitize_key( $_GET['ch_step'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display routing; form submission goes through options.php with its own nonce.
 			if ( in_array( $step, array( 'roles', 'dashboard', 'restrictions' ), true ) ) {
 				return $step;
 			}
 		}
-		$tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : '';
+		$tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display routing; form submission goes through options.php with its own nonce.
 		return in_array( $tab, self::TABS, true ) ? $tab : 'roles';
 	}
 
@@ -812,7 +812,7 @@ class CH_Admin_Settings {
 					<td><input type="text" name="%1$s[dashboard][quick_links][%2$d][icon]"  value="%5$s" class="regular-text" placeholder="dashicons-admin-generic"></td>
 				</tr>',
 				esc_attr( CH_Core::OPTION_CONFIG ),
-				$i,
+				(int) $i,
 				esc_attr( $label ),
 				esc_attr( $url ),
 				esc_attr( $icon )
@@ -891,12 +891,12 @@ class CH_Admin_Settings {
 		$admin_post_url = admin_url( 'admin-post.php' );
 
 		// Success / error notices from a previous import.
-		if ( ! empty( $_GET['ch_import_success'] ) ) {
+		if ( ! empty( $_GET['ch_import_success'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display routing; form submission goes through options.php with its own nonce.
 			echo '<div class="notice notice-success is-dismissible"><p>';
 			echo esc_html( __( 'Configuration imported successfully.', 'client-handoff' ) );
 			echo '</p></div>';
-		} elseif ( ! empty( $_GET['ch_import_error'] ) ) {
-			$reason = sanitize_key( $_GET['ch_import_error'] );
+		} elseif ( ! empty( $_GET['ch_import_error'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display routing; form submission goes through options.php with its own nonce.
+			$reason = sanitize_key( $_GET['ch_import_error'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display routing; form submission goes through options.php with its own nonce.
 			$msg    = 'parse' === $reason
 				? __( 'Import failed: the file could not be parsed as valid JSON.', 'client-handoff' )
 				: __( 'Import failed: invalid or oversized file upload.', 'client-handoff' );
