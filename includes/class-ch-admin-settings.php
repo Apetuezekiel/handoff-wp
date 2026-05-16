@@ -299,6 +299,8 @@ class CH_Admin_Settings {
 
 			<?php $this->render_export_import_section(); ?>
 
+			<?php $this->render_rerun_setup_section(); ?>
+
 		</div>
 		<?php
 	}
@@ -501,6 +503,17 @@ class CH_Admin_Settings {
 		// no-enabled rule the Roles tab follows (see sanitize_roles docblock).
 		if ( ! empty( $input['_ch_setup_dismiss'] ) ) {
 			$partial['setup_completed'] = true;
+		}
+
+		// Re-run Setup marker: reset setup_completed to false so the flow
+		// re-shows on the next page load. 'enabled' is NOT touched — the
+		// developer may want to re-run setup without disabling handoff mode.
+		// The three flow-control markers (_ch_setup_complete, _ch_setup_dismiss,
+		// _ch_setup_rerun) are mutually exclusive by form design; submitting
+		// multiple gives last-wins behaviour from the partial overlay, which is
+		// acceptable — no form in the UI submits more than one.
+		if ( ! empty( $input['_ch_setup_rerun'] ) ) {
+			$partial['setup_completed'] = false;
 		}
 
 		return $this->core->merge_into_current( $partial );
@@ -869,6 +882,41 @@ class CH_Admin_Settings {
 			</form>
 
 		</div>
+		<?php
+	}
+
+	/**
+	 * Render the "Re-run Setup" section below the Export/Import section.
+	 *
+	 * Only rendered when the setup flow is available but NOT currently active
+	 * (i.e. the developer has completed setup and wants to re-trigger it). When
+	 * the form is submitted the _ch_setup_rerun marker is picked up by sanitize(),
+	 * which sets setup_completed=false. On the next page load should_show()
+	 * returns true and the setup flow renders automatically.
+	 *
+	 * No _wp_http_referer override is used — the default redirect back to
+	 * options.php→settings page is intentional so render_page() re-runs and
+	 * should_show() fires.
+	 *
+	 * DEFERRED UNIT TEST — Phase 4
+	 * HTML output; follows the renderer-deferral pattern established for field
+	 * renderers in previous passes.
+	 */
+	public function render_rerun_setup_section() {
+		if ( null === $this->setup_flow ) {
+			return;
+		}
+		?>
+		<hr>
+		<h2><?php echo esc_html( __( 'Setup Wizard', 'client-handoff' ) ); ?></h2>
+		<p><?php echo esc_html( __( 'Re-run the setup wizard to update your onboarding configuration.', 'client-handoff' ) ); ?></p>
+		<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
+			<?php settings_fields( CH_Core::OPTION_CONFIG ); ?>
+			<input type="hidden"
+			       name="<?php echo esc_attr( CH_Core::OPTION_CONFIG ); ?>[_ch_setup_rerun]"
+			       value="1">
+			<?php submit_button( __( 'Re-run Setup', 'client-handoff' ), 'secondary' ); ?>
+		</form>
 		<?php
 	}
 }

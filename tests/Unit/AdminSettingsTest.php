@@ -1212,6 +1212,40 @@ class AdminSettingsTest extends TestCase {
 	}
 
 	// -------------------------------------------------------------------------
+	// R1 — _ch_setup_rerun resets setup_completed to false; enabled is preserved
+
+	/**
+	 * R1 — sanitize() with _ch_setup_rerun=1 sets setup_completed=false without
+	 * touching enabled.
+	 *
+	 * Saved config has enabled=true and setup_completed=true (handoff active,
+	 * setup done). Developer submits the Re-run Setup form. After sanitize() the
+	 * config must have setup_completed=false so the flow re-appears on the next
+	 * page load, while enabled must remain true — rerunning setup must not
+	 * disable handoff mode.
+	 */
+	public function test_sanitize_setup_rerun_marker_resets_setup_completed_only() {
+		$saved = array(
+			'enabled'         => true,
+			'setup_completed' => true,
+		);
+		$core     = $this->make_core( $saved );
+		$settings = new CH_Admin_Settings( $core );
+
+		$result = $settings->sanitize( array(
+			'_ch_setup_rerun' => '1',
+		) );
+
+		$this->assertFalse(
+			$result['setup_completed'],
+			'setup_completed must be reset to false after _ch_setup_rerun'
+		);
+		$this->assertTrue(
+			$result['enabled'],
+			'enabled must be preserved — rerun does not disable handoff'
+		);
+	}
+
 	// S12 — normal Roles save does not touch enabled or setup_completed
 	// -------------------------------------------------------------------------
 
