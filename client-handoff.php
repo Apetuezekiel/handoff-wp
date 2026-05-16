@@ -27,6 +27,7 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-plugin-protection.
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-menu-manager.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-admin-bar.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-notifications.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-admin-settings.php';
 
 // ---- Plugin constants -------------------------------------------------------
 // Defined after the include so they can mirror CH_Core class constants,
@@ -52,15 +53,17 @@ register_deactivation_hook( __FILE__, array( 'CH_Core', 'on_deactivation' ) );
 // bootstrapped before we read roles and user data. user_has_cap can fire
 // from plugins_loaded onward; current_screen fires later in the admin.
 add_action( 'plugins_loaded', static function () {
-	$core         = CH_Core::get_instance();
-	$enforcer     = new CH_Enforcer( $core );
-	$protection   = new CH_Plugin_Protection( $core );
-	$menu_manager = new CH_Menu_Manager( $core );
+	$core          = CH_Core::get_instance();
+	$enforcer      = new CH_Enforcer( $core );
+	$protection    = new CH_Plugin_Protection( $core );
+	$menu_manager  = new CH_Menu_Manager( $core );
 	$admin_bar     = new CH_Admin_Bar( $core );
 	$notifications = new CH_Notifications( $core );
+	$settings      = new CH_Admin_Settings( $core );
 	$enforcer->register_hooks();
 	$protection->register_hooks();
 	$menu_manager->register_hooks();
 	$admin_bar->register_hooks();
 	$notifications->register_hooks();
+	$settings->register_hooks();
 } );

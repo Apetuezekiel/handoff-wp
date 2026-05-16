@@ -582,4 +582,76 @@ class CoreTest extends TestCase {
 		// If user_has_cap_unfiltered secretly called user_can(), this would fail.
 		$this->assertTrue( $core->user_has_cap_unfiltered( $user, 'activate_plugins' ) );
 	}
+
+	// =========================================================================
+	// merge_into_current — partial-merge helper
+	// =========================================================================
+
+	/**
+	 * An empty partial leaves the saved config unchanged (minus unknown keys).
+	 *
+	 * @test
+	 */
+	public function test_merge_into_current_empty_partial_returns_saved_config() {
+		$core = $this->make_core( array(
+			'enabled'         => true,
+			'protected_roles' => array( 'subscriber' ),
+		) );
+
+		$result = $core->merge_into_current( array() );
+
+		$this->assertTrue( $result['enabled'] );
+		$this->assertSame( array( 'subscriber' ), $result['protected_roles'] );
+	}
+
+	/**
+	 * A key in $partial overrides the matching saved value; other saved keys survive.
+	 *
+	 * @test
+	 */
+	public function test_merge_into_current_partial_key_overrides_saved() {
+		$core = $this->make_core( array(
+			'enabled'         => true,
+			'protected_roles' => array( 'subscriber' ),
+		) );
+
+		$result = $core->merge_into_current( array( 'enabled' => false ) );
+
+		$this->assertFalse( $result['enabled'] );
+		$this->assertSame( array( 'subscriber' ), $result['protected_roles'] );
+	}
+
+	/**
+	 * On a fresh install (saved=[]) the result is DEFAULTS overlaid with $partial.
+	 *
+	 * @test
+	 */
+	public function test_merge_into_current_on_fresh_install_uses_defaults() {
+		$core = $this->make_core( array() ); // fresh install: no saved config.
+
+		$result = $core->merge_into_current( array( 'enabled' => true ) );
+
+		$this->assertTrue( $result['enabled'] );
+		$this->assertSame( array(), $result['protected_roles'] );
+		$this->assertSame( array(), $result['admin_roles'] );
+		$this->assertArrayHasKey( 'enforcement', $result );
+		$this->assertArrayHasKey( 'dashboard', $result );
+	}
+
+	/**
+	 * Keys present in $partial but absent from DEFAULTS are silently dropped.
+	 *
+	 * @test
+	 */
+	public function test_merge_into_current_drops_unknown_partial_keys() {
+		$core = $this->make_core( array() );
+
+		$result = $core->merge_into_current( array(
+			'enabled'        => true,
+			'future_feature' => 'should_be_dropped',
+		) );
+
+		$this->assertTrue( $result['enabled'] );
+		$this->assertArrayNotHasKey( 'future_feature', $result );
+	}
 }

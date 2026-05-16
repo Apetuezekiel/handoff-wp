@@ -234,6 +234,34 @@ class CH_Core {
 		update_option( self::OPTION_CONFIG, $this->config, 'yes' );
 	}
 
+	/**
+	 * Merge $partial into the current saved option and return the result.
+	 *
+	 * Used by the settings sanitize callback to apply a tab's fields onto the
+	 * full config without discarding fields from other tabs that were not
+	 * submitted in the current form POST.
+	 *
+	 * Two-step approach solves the fresh-install problem:
+	 *   1. Hydrate the saved option against DEFAULTS so every key exists as a
+	 *      merge target — even on a fresh install where saved = [].
+	 *   2. Overlay $partial onto the hydrated base; unknown keys in $partial are
+	 *      dropped by deep_merge's key-exists guard.
+	 *
+	 * Does NOT persist the result — callers (the sanitize callback) return the
+	 * merged array to the WP Settings API, which persists it via update_option.
+	 *
+	 * @param array $partial Fields from the submitted tab (already sanitized).
+	 * @return array Full merged config ready to be saved.
+	 */
+	public function merge_into_current( array $partial ): array {
+		$saved = get_option( self::OPTION_CONFIG, array() );
+		if ( ! is_array( $saved ) ) {
+			$saved = array();
+		}
+		$saved_hydrated = self::deep_merge( $saved, self::DEFAULTS );
+		return self::deep_merge( $partial, $saved_hydrated );
+	}
+
 	// -------------------------------------------------------------------------
 	// Role resolution
 	// -------------------------------------------------------------------------
