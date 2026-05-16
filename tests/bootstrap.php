@@ -38,6 +38,12 @@ if ( ! function_exists( 'esc_url' ) ) {
 		return (string) $url;
 	}
 }
+if ( ! function_exists( 'sanitize_key' ) ) {
+	function sanitize_key( $key ) {
+		$key = strtolower( (string) $key );
+		return preg_replace( '/[^a-z0-9_\-]/', '', $key );
+	}
+}
 
 WP_Mock::bootstrap();
 
@@ -109,6 +115,19 @@ if ( ! class_exists( 'WP_Roles' ) ) {
 			}
 			return new WP_Role( $this->roles_data[ $role_name ] );
 		}
+
+		/**
+		 * Return a map of role slug => display name (slug used as placeholder name).
+		 *
+		 * @return array<string, string>
+		 */
+		public function get_names() {
+			$names = array();
+			foreach ( $this->roles_data as $slug => $caps ) {
+				$names[ $slug ] = $slug;
+			}
+			return $names;
+		}
 	}
 }
 
@@ -170,3 +189,4 @@ require_once dirname( __DIR__ ) . '/includes/class-ch-plugin-protection.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-menu-manager.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-admin-bar.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-notifications.php';
+require_once dirname( __DIR__ ) . '/includes/class-ch-admin-settings.php';
