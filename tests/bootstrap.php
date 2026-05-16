@@ -49,6 +49,28 @@ if ( ! function_exists( 'sanitize_text_field' ) ) {
 		return trim( strip_tags( (string) $str ) );
 	}
 }
+if ( ! function_exists( 'wp_kses_post' ) ) {
+	/**
+	 * Stub for wp_kses_post: strips tags not in the allowed set.
+	 * Allows basic HTML that developers may put in welcome_message; strips
+	 * script/style/iframe and similar. Close enough for unit testing —
+	 * real wp_kses_post has an extensive allowlist, but the key behaviour
+	 * we need to verify (that <script> is removed) works with strip_tags.
+	 */
+	function wp_kses_post( $content ) {
+		$allowed = '<p><a><strong><em><ul><ol><li><h1><h2><h3><h4><h5><h6><br><div><span><blockquote><code><pre>';
+		return strip_tags( (string) $content, $allowed );
+	}
+}
+if ( ! function_exists( 'get_bloginfo' ) ) {
+	/**
+	 * Stub for get_bloginfo: identity passthrough.
+	 * Tests assert which key was queried, not what it resolves to.
+	 */
+	function get_bloginfo( $show = '', $filter = '' ) {
+		return (string) $show;
+	}
+}
 
 WP_Mock::bootstrap();
 
@@ -195,3 +217,4 @@ require_once dirname( __DIR__ ) . '/includes/class-ch-menu-manager.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-admin-bar.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-notifications.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-admin-settings.php';
+require_once dirname( __DIR__ ) . '/includes/class-ch-dashboard.php';
