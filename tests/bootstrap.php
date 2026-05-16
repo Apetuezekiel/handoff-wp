@@ -15,6 +15,8 @@ require_once dirname( __DIR__ ) . '/vendor/autoload.php';
 // and PHP throws a TypeError. Defining them here as PHP-userspace functions
 // before WP_Mock::bootstrap() runs means WP_Mock skips its own stubs
 // (function_exists() == true) and our identity versions are used instead.
+// Tests that need specific return values can still use WP_Mock::userFunction()
+// with Patchwork to override these.
 
 if ( ! function_exists( '__' ) ) {
 	function __( $text, $domain = 'default' ) {
@@ -130,3 +132,4 @@ if ( ! class_exists( 'WP_Screen' ) ) {
 // ---- Classes under test -----------------------------------------------------
 require_once dirname( __DIR__ ) . '/includes/class-ch-core.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-enforcer.php';
+require_once dirname( __DIR__ ) . '/includes/class-ch-plugin-protection.php';
