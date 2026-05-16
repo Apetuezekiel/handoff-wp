@@ -129,8 +129,43 @@ if ( ! class_exists( 'WP_Screen' ) ) {
 	}
 }
 
+if ( ! class_exists( 'WP_Admin_Bar' ) ) {
+	/**
+	 * Stub for WP_Admin_Bar — records remove_node() calls for assertions.
+	 *
+	 * Tests construct this with a flat list of node IDs, assign it to the global
+	 * $wp_admin_bar, run simplify_admin_bar(), then inspect the $removed list.
+	 */
+	class WP_Admin_Bar {
+		/** @var array<string, object> node ID => node object */
+		private $nodes = array();
+
+		/** @var string[] node IDs passed to remove_node(), in call order */
+		public $removed = array();
+
+		/**
+		 * @param array<string, object> $nodes
+		 */
+		public function set_nodes( array $nodes ) {
+			$this->nodes = $nodes;
+		}
+
+		/** @return array<string, object> */
+		public function get_nodes() {
+			return $this->nodes;
+		}
+
+		/** @param string $id */
+		public function remove_node( $id ) {
+			$this->removed[] = $id;
+			unset( $this->nodes[ $id ] );
+		}
+	}
+}
+
 // ---- Classes under test -----------------------------------------------------
 require_once dirname( __DIR__ ) . '/includes/class-ch-core.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-enforcer.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-plugin-protection.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-menu-manager.php';
+require_once dirname( __DIR__ ) . '/includes/class-ch-admin-bar.php';
