@@ -22,6 +22,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 // Manual includes — no Composer, no autoloader.
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-core.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-enforcer.php';
 
 // ---- Plugin constants -------------------------------------------------------
 // Defined after the include so they can mirror CH_Core class constants,
@@ -41,3 +42,12 @@ define( 'CH_TEXT_DOMAIN',      CH_Core::TEXT_DOMAIN );
 // ---- Lifecycle hooks --------------------------------------------------------
 register_activation_hook( __FILE__, array( 'CH_Core', 'on_activation' ) );
 register_deactivation_hook( __FILE__, array( 'CH_Core', 'on_deactivation' ) );
+
+// ---- Feature hooks ----------------------------------------------------------
+// Enforcement hooks registered on plugins_loaded so WordPress is fully
+// bootstrapped before we read roles and user data.
+add_action( 'plugins_loaded', static function () {
+	$core     = CH_Core::get_instance();
+	$enforcer = new CH_Enforcer( $core );
+	$enforcer->register_hooks();
+} );
