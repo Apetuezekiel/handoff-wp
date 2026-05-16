@@ -1,0 +1,783 @@
+/**
+ * Client Handoff — Admin UI
+ *
+ * Design system built on WordPress admin conventions. Uses CSS custom
+ * properties so a site's admin-color scheme can override the accent colour
+ * without touching this file.
+ */
+
+/* ==========================================================================
+   0. Custom properties
+   ========================================================================== */
+
+:root {
+	--ch-accent:        #2271b1;
+	--ch-accent-hover:  #135e96;
+	--ch-accent-light:  #e8f0f8;
+	--ch-accent-subtle: rgba(34, 113, 177, 0.08);
+	--ch-success:       #00a32a;
+	--ch-amber:         #dba617;
+	--ch-amber-light:   #fcf5de;
+	--ch-amber-dark:    #996800;
+	--ch-danger:        #d63638;
+
+	--ch-bg:            #f6f7f7;
+	--ch-surface:       #ffffff;
+	--ch-border:        #dcdcde;
+	--ch-border-light:  #f0f0f1;
+
+	--ch-text:          #3c434a;
+	--ch-text-muted:    #787c82;
+	--ch-text-strong:   #1d2327;
+
+	--ch-radius:        6px;
+	--ch-radius-sm:     4px;
+	--ch-radius-lg:     10px;
+
+	--ch-shadow:        0 1px 3px rgba(0,0,0,.08), 0 1px 1px rgba(0,0,0,.04);
+	--ch-shadow-md:     0 2px 8px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
+
+	--ch-transition:    150ms ease;
+}
+
+/* ==========================================================================
+   1. Page shell
+   ========================================================================== */
+
+.ch-admin-page {
+	max-width: 960px;
+}
+
+/* Page header gradient banner */
+.ch-page-header {
+	background: linear-gradient(135deg, #1d2327 0%, #2c3338 55%, #2271b1 100%);
+	border-radius: var(--ch-radius-lg);
+	color: #fff;
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 22px 28px;
+	margin: 16px 0 24px;
+	box-shadow: var(--ch-shadow-md);
+}
+
+.ch-page-header .dashicons {
+	font-size: 36px;
+	width: 36px;
+	height: 36px;
+	opacity: .9;
+}
+
+.ch-page-header__text h1 {
+	color: #fff;
+	font-size: 20px;
+	font-weight: 600;
+	margin: 0 0 2px;
+	line-height: 1.3;
+}
+
+.ch-page-header__text p {
+	color: rgba(255,255,255,.75);
+	font-size: 13px;
+	margin: 0;
+}
+
+/* ==========================================================================
+   2. Nav tabs (override WP defaults)
+   ========================================================================== */
+
+.ch-admin-page .nav-tab-wrapper {
+	border-bottom: 2px solid var(--ch-border);
+	margin-bottom: 20px;
+}
+
+.ch-admin-page .nav-tab {
+	border: none;
+	border-bottom: 3px solid transparent;
+	border-radius: 0;
+	background: transparent;
+	color: var(--ch-text-muted);
+	font-size: 13px;
+	font-weight: 500;
+	padding: 8px 14px 10px;
+	margin-bottom: -2px;
+	transition: color var(--ch-transition), border-color var(--ch-transition);
+	text-decoration: none;
+}
+
+.ch-admin-page .nav-tab:hover {
+	color: var(--ch-accent);
+	background: transparent;
+	border-bottom-color: var(--ch-accent-light);
+}
+
+.ch-admin-page .nav-tab-active,
+.ch-admin-page .nav-tab-active:hover {
+	color: var(--ch-accent);
+	border-bottom-color: var(--ch-accent);
+	background: transparent;
+}
+
+/* ==========================================================================
+   3. Card component
+   ========================================================================== */
+
+.ch-card {
+	background: var(--ch-surface);
+	border: 1px solid var(--ch-border);
+	border-radius: var(--ch-radius);
+	box-shadow: var(--ch-shadow);
+	padding: 24px 28px;
+	margin-bottom: 20px;
+}
+
+.ch-card__title {
+	font-size: 15px;
+	font-weight: 600;
+	color: var(--ch-text-strong);
+	margin: 0 0 4px;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.ch-card__title .dashicons {
+	color: var(--ch-accent);
+	font-size: 18px;
+	width: 18px;
+	height: 18px;
+}
+
+.ch-card__description {
+	color: var(--ch-text-muted);
+	font-size: 12px;
+	margin: 0 0 16px;
+}
+
+.ch-card__divider {
+	border: none;
+	border-top: 1px solid var(--ch-border-light);
+	margin: 16px -28px;
+}
+
+/* Amber / warning card variant */
+.ch-card--amber {
+	border-color: var(--ch-amber);
+	background: var(--ch-amber-light);
+}
+
+.ch-card--amber .ch-card__title {
+	color: var(--ch-amber-dark);
+}
+
+.ch-card--amber .ch-card__title .dashicons {
+	color: var(--ch-amber);
+}
+
+/* ==========================================================================
+   4. Form layout inside cards
+   ========================================================================== */
+
+.ch-admin-page .form-table th {
+	width: 200px;
+	font-weight: 500;
+	color: var(--ch-text-strong);
+	vertical-align: top;
+	padding-top: 14px;
+}
+
+.ch-admin-page .form-table td {
+	padding: 10px 0 10px 16px;
+}
+
+/* ==========================================================================
+   5. Checkbox lists
+   ========================================================================== */
+
+.ch-checkbox-list {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+/* Hide the legacy <br> separators — kept in HTML for test compatibility */
+.ch-checkbox-list br {
+	display: none;
+}
+
+.ch-checkbox-list label {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 7px 10px;
+	border-radius: var(--ch-radius-sm);
+	cursor: pointer;
+	transition: background var(--ch-transition);
+	line-height: 1.4;
+	border: 1px solid transparent;
+}
+
+.ch-checkbox-list label:hover {
+	background: var(--ch-accent-subtle);
+	border-color: var(--ch-accent-light);
+}
+
+.ch-checkbox-list label:has(input:checked) {
+	background: var(--ch-accent-light);
+	border-color: rgba(34, 113, 177, .25);
+}
+
+.ch-checkbox-list input[type="checkbox"] {
+	margin: 0;
+	flex-shrink: 0;
+	accent-color: var(--ch-accent);
+	width: 15px;
+	height: 15px;
+	cursor: pointer;
+}
+
+.ch-checkbox-list code {
+	background: var(--ch-bg);
+	border: 1px solid var(--ch-border);
+	border-radius: 3px;
+	font-size: 11px;
+	padding: 1px 5px;
+	color: var(--ch-text);
+}
+
+/* ==========================================================================
+   6. Toggle row (single checkbox with label)
+   ========================================================================== */
+
+.ch-toggle-row {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px 12px;
+	border: 1px solid var(--ch-border);
+	border-radius: var(--ch-radius-sm);
+	background: var(--ch-bg);
+	cursor: pointer;
+	transition: background var(--ch-transition), border-color var(--ch-transition);
+}
+
+.ch-toggle-row:hover {
+	background: var(--ch-accent-subtle);
+	border-color: var(--ch-accent-light);
+}
+
+.ch-toggle-row:has(input:checked) {
+	background: var(--ch-accent-light);
+	border-color: rgba(34, 113, 177, .3);
+}
+
+.ch-toggle-row input[type="checkbox"] {
+	margin: 0;
+	flex-shrink: 0;
+	accent-color: var(--ch-accent);
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+}
+
+.ch-toggle-row span {
+	font-size: 13px;
+	color: var(--ch-text);
+}
+
+/* ==========================================================================
+   7. Textarea
+   ========================================================================== */
+
+.ch-textarea {
+	width: 100%;
+	max-width: 540px;
+	border: 1px solid var(--ch-border);
+	border-radius: var(--ch-radius-sm);
+	padding: 10px 12px;
+	font-size: 13px;
+	line-height: 1.6;
+	color: var(--ch-text);
+	background: var(--ch-surface);
+	resize: vertical;
+	transition: border-color var(--ch-transition), box-shadow var(--ch-transition);
+	box-sizing: border-box;
+}
+
+.ch-textarea:focus {
+	border-color: var(--ch-accent);
+	box-shadow: 0 0 0 2px rgba(34, 113, 177, .15);
+	outline: none;
+}
+
+/* ==========================================================================
+   8. Quick-links table
+   ========================================================================== */
+
+.ch-quick-links-table {
+	width: 100%;
+	max-width: 620px;
+	border-collapse: collapse;
+	font-size: 13px;
+}
+
+.ch-quick-links-table thead th {
+	text-align: left;
+	padding: 8px 10px;
+	background: var(--ch-bg);
+	border-bottom: 2px solid var(--ch-border);
+	font-weight: 600;
+	color: var(--ch-text-muted);
+	font-size: 11px;
+	text-transform: uppercase;
+	letter-spacing: .5px;
+}
+
+.ch-quick-links-table tbody tr:nth-child(odd) {
+	background: var(--ch-bg);
+}
+
+.ch-quick-links-table tbody tr:nth-child(even) {
+	background: var(--ch-surface);
+}
+
+.ch-quick-links-table td {
+	padding: 6px 8px;
+}
+
+.ch-quick-links-table input[type="text"] {
+	width: 100%;
+	min-width: 0;
+	box-sizing: border-box;
+}
+
+/* ==========================================================================
+   9. Developer contact grid
+   ========================================================================== */
+
+.ch-contact-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px 20px;
+	max-width: 540px;
+}
+
+.ch-contact-grid label {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--ch-text-muted);
+	text-transform: uppercase;
+	letter-spacing: .4px;
+}
+
+.ch-contact-grid label input {
+	font-weight: 400;
+	text-transform: none;
+	letter-spacing: 0;
+}
+
+.ch-contact-grid .ch-contact-grid__full {
+	grid-column: 1 / -1;
+}
+
+/* ==========================================================================
+   10. Export / Import cards
+   ========================================================================== */
+
+.ch-io-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+}
+
+@media (max-width: 600px) {
+	.ch-io-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.ch-io-card {
+	background: var(--ch-bg);
+	border: 1px solid var(--ch-border);
+	border-radius: var(--ch-radius);
+	padding: 18px 20px;
+}
+
+.ch-io-card h3 {
+	font-size: 13px;
+	font-weight: 600;
+	margin: 0 0 6px;
+	color: var(--ch-text-strong);
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.ch-io-card h3 .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	color: var(--ch-accent);
+}
+
+.ch-io-card p {
+	font-size: 12px;
+	color: var(--ch-text-muted);
+	margin: 0 0 14px;
+}
+
+.ch-io-card .button {
+	width: 100%;
+	text-align: center;
+	justify-content: center;
+	box-sizing: border-box;
+}
+
+.ch-io-card input[type="file"] {
+	display: block;
+	width: 100%;
+	margin-bottom: 10px;
+	font-size: 12px;
+}
+
+/* ==========================================================================
+   11. Setup flow
+   ========================================================================== */
+
+/* Progress stepper */
+.ch-setup-flow .ch-page-header {
+	margin-bottom: 0;
+	border-radius: var(--ch-radius-lg) var(--ch-radius-lg) 0 0;
+}
+
+.ch-stepper {
+	background: var(--ch-surface);
+	border: 1px solid var(--ch-border);
+	border-top: none;
+	border-radius: 0 0 var(--ch-radius-lg) var(--ch-radius-lg);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 16px 28px;
+	margin-bottom: 24px;
+	gap: 0;
+	overflow: hidden;
+}
+
+.ch-stepper__step {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 6px;
+	position: relative;
+	flex: 1;
+}
+
+/* Connector line between steps */
+.ch-stepper__step + .ch-stepper__step::before {
+	content: '';
+	position: absolute;
+	top: 14px;
+	left: calc(-50% + 8px);
+	right: calc(50% + 8px);
+	height: 2px;
+	background: var(--ch-border);
+	z-index: 0;
+}
+
+.ch-stepper__step--done + .ch-stepper__step::before {
+	background: var(--ch-accent);
+}
+
+.ch-stepper__dot {
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background: var(--ch-bg);
+	border: 2px solid var(--ch-border);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--ch-text-muted);
+	position: relative;
+	z-index: 1;
+	transition: background var(--ch-transition), border-color var(--ch-transition), color var(--ch-transition);
+}
+
+.ch-stepper__step--done .ch-stepper__dot {
+	background: var(--ch-accent);
+	border-color: var(--ch-accent);
+	color: #fff;
+}
+
+.ch-stepper__step--active .ch-stepper__dot {
+	background: var(--ch-surface);
+	border-color: var(--ch-accent);
+	border-width: 3px;
+	color: var(--ch-accent);
+	box-shadow: 0 0 0 3px rgba(34,113,177,.15);
+}
+
+.ch-stepper__label {
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--ch-text-muted);
+	white-space: nowrap;
+	text-align: center;
+}
+
+.ch-stepper__step--active .ch-stepper__label {
+	color: var(--ch-accent);
+	font-weight: 600;
+}
+
+.ch-stepper__step--done .ch-stepper__label {
+	color: var(--ch-text);
+}
+
+/* Setup form card */
+.ch-setup-flow .ch-setup-form-card {
+	background: var(--ch-surface);
+	border: 1px solid var(--ch-border);
+	border-radius: var(--ch-radius);
+	box-shadow: var(--ch-shadow);
+	padding: 28px 32px;
+	margin-bottom: 12px;
+}
+
+.ch-setup-flow .ch-setup-form-card .submit {
+	padding-left: 0;
+}
+
+/* Skip link */
+.ch-skip-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 12px;
+	color: var(--ch-text-muted);
+	text-decoration: none;
+	padding: 6px 0;
+	transition: color var(--ch-transition);
+}
+
+.ch-skip-link:hover {
+	color: var(--ch-accent);
+}
+
+/* ==========================================================================
+   12. Activate step — stat grid
+   ========================================================================== */
+
+.ch-stat-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+	gap: 12px;
+	margin-bottom: 24px;
+}
+
+.ch-stat-card {
+	background: var(--ch-bg);
+	border: 1px solid var(--ch-border);
+	border-radius: var(--ch-radius);
+	padding: 16px;
+	text-align: center;
+}
+
+.ch-stat-card__value {
+	display: block;
+	font-size: 28px;
+	font-weight: 700;
+	color: var(--ch-accent);
+	line-height: 1.1;
+	margin-bottom: 4px;
+}
+
+.ch-stat-card__label {
+	display: block;
+	font-size: 11px;
+	font-weight: 500;
+	color: var(--ch-text-muted);
+	text-transform: uppercase;
+	letter-spacing: .5px;
+}
+
+.ch-activate-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 12px;
+	margin-top: 8px;
+}
+
+.ch-activate-actions .button-primary.button-large {
+	padding: 8px 20px;
+	font-size: 14px;
+	height: auto;
+	line-height: 1.5;
+}
+
+/* ==========================================================================
+   13. Client dashboard widget
+   ========================================================================== */
+
+.ch-widget-section {
+	margin-bottom: 20px;
+	padding-bottom: 20px;
+	border-bottom: 1px solid var(--ch-border-light);
+}
+
+.ch-widget-section:last-child {
+	margin-bottom: 0;
+	padding-bottom: 0;
+	border-bottom: none;
+}
+
+.ch-widget-section h3 {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--ch-text-muted);
+	text-transform: uppercase;
+	letter-spacing: .5px;
+	margin: 0 0 10px;
+}
+
+/* Welcome message */
+.ch-welcome-message {
+	font-size: 14px;
+	line-height: 1.7;
+	color: var(--ch-text);
+}
+
+/* Quick-action links in dashboard widget */
+.ch-quick-links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.ch-quick-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 7px 14px;
+	background: var(--ch-accent-light);
+	border: 1px solid rgba(34,113,177,.2);
+	border-radius: 20px;
+	color: var(--ch-accent);
+	font-size: 13px;
+	font-weight: 500;
+	text-decoration: none;
+	transition: background var(--ch-transition), box-shadow var(--ch-transition);
+}
+
+.ch-quick-link:hover {
+	background: var(--ch-accent);
+	color: #fff;
+	border-color: var(--ch-accent);
+	box-shadow: var(--ch-shadow);
+}
+
+.ch-quick-link .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+}
+
+/* Developer contact */
+.ch-developer-contact {
+	font-size: 13px;
+	line-height: 1.6;
+}
+
+.ch-developer-contact a {
+	color: var(--ch-accent);
+	text-decoration: none;
+}
+
+.ch-developer-contact a:hover {
+	text-decoration: underline;
+}
+
+/* Site status */
+.ch-site-status-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 10px;
+}
+
+@media (max-width: 500px) {
+	.ch-site-status-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+.ch-status-item {
+	background: var(--ch-bg);
+	border: 1px solid var(--ch-border);
+	border-radius: var(--ch-radius-sm);
+	padding: 10px 12px;
+}
+
+.ch-status-item__label {
+	display: block;
+	font-size: 10px;
+	font-weight: 600;
+	color: var(--ch-text-muted);
+	text-transform: uppercase;
+	letter-spacing: .4px;
+	margin-bottom: 2px;
+}
+
+.ch-status-item__value {
+	display: block;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--ch-text-strong);
+}
+
+/* Activity feed */
+.ch-activity-feed ul {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.ch-activity-feed ul li {
+	padding: 6px 0;
+	border-bottom: 1px solid var(--ch-border-light);
+	font-size: 13px;
+	color: var(--ch-text);
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.ch-activity-feed ul li::before {
+	content: '';
+	display: inline-block;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--ch-accent);
+	flex-shrink: 0;
+}
+
+.ch-activity-feed ul li:last-child {
+	border-bottom: none;
+}
+
+.ch-empty-state {
+	padding: 16px;
+	text-align: center;
+	color: var(--ch-text-muted);
+	font-size: 13px;
+	background: var(--ch-bg);
+	border-radius: var(--ch-radius-sm);
+	border: 1px dashed var(--ch-border);
+}

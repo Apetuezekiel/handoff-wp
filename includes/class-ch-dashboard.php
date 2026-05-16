@@ -163,7 +163,7 @@ class CH_Dashboard {
 		// 1. Welcome message.
 		$welcome = isset( $config['welcome_message'] ) ? $config['welcome_message'] : '';
 		if ( '' !== $welcome ) {
-			echo '<div class="ch-welcome-message">';
+			echo '<div class="ch-widget-section ch-welcome-message">';
 			echo wp_kses_post( $welcome );
 			echo '</div>';
 		}
@@ -172,8 +172,9 @@ class CH_Dashboard {
 		$quick_links = isset( $config['quick_links'] ) && is_array( $config['quick_links'] )
 			? $config['quick_links'] : array();
 		if ( ! empty( $quick_links ) ) {
-			echo '<div class="ch-quick-links">';
+			echo '<div class="ch-widget-section">';
 			echo '<h3>' . esc_html( __( 'Quick Actions', 'client-handoff' ) ) . '</h3>';
+			echo '<div class="ch-quick-links">';
 			foreach ( $quick_links as $link ) {
 				$label = isset( $link['label'] ) ? esc_html( $link['label'] )  : '';
 				$url   = isset( $link['url'] )   ? esc_url( $link['url'] )     : '#';
@@ -186,6 +187,7 @@ class CH_Dashboard {
 				);
 			}
 			echo '</div>';
+			echo '</div>';
 		}
 
 		// 3. Developer contact block.
@@ -193,7 +195,7 @@ class CH_Dashboard {
 			? $config['developer_contact'] : array();
 		$has_contact = ! empty( $contact['name'] ) || ! empty( $contact['email'] ) || ! empty( $contact['url'] );
 		if ( $has_contact ) {
-			echo '<div class="ch-developer-contact">';
+			echo '<div class="ch-widget-section ch-developer-contact">';
 			echo '<h3>' . esc_html( __( 'Need Help?', 'client-handoff' ) ) . '</h3>';
 			if ( ! empty( $contact['name'] ) ) {
 				echo '<p>' . esc_html( $contact['name'] ) . '</p>';
@@ -219,14 +221,22 @@ class CH_Dashboard {
 				? __( 'Secured (HTTPS)', 'client-handoff' )
 				: __( 'Not secured', 'client-handoff' );
 
-			echo '<div class="ch-site-status">';
+			echo '<div class="ch-widget-section ch-site-status">';
 			echo '<h3>' . esc_html( __( 'Site Status', 'client-handoff' ) ) . '</h3>';
-			echo '<p><strong>' . esc_html( __( 'WordPress version:', 'client-handoff' ) ) . '</strong> ';
-			echo esc_html( get_bloginfo( 'version' ) ) . '</p>';
-			echo '<p><strong>' . esc_html( __( 'Security:', 'client-handoff' ) ) . '</strong> ';
-			echo esc_html( $ssl_status ) . '</p>';
-			echo '<p><strong>' . esc_html( __( 'Plugin updates pending:', 'client-handoff' ) ) . '</strong> ';
-			echo esc_html( $plugin_updates ) . '</p>';
+			echo '<div class="ch-site-status-grid">';
+			echo '<div class="ch-status-item">';
+			echo '<span class="ch-status-item__label">' . esc_html( __( 'WordPress version:', 'client-handoff' ) ) . '</span>';
+			echo '<span class="ch-status-item__value">' . esc_html( get_bloginfo( 'version' ) ) . '</span>';
+			echo '</div>';
+			echo '<div class="ch-status-item">';
+			echo '<span class="ch-status-item__label">' . esc_html( __( 'Security:', 'client-handoff' ) ) . '</span>';
+			echo '<span class="ch-status-item__value">' . esc_html( $ssl_status ) . '</span>';
+			echo '</div>';
+			echo '<div class="ch-status-item">';
+			echo '<span class="ch-status-item__label">' . esc_html( __( 'Plugin updates pending:', 'client-handoff' ) ) . '</span>';
+			echo '<span class="ch-status-item__value">' . esc_html( $plugin_updates ) . '</span>';
+			echo '</div>';
+			echo '</div>';
 			echo '</div>';
 		}
 
@@ -282,11 +292,14 @@ class CH_Dashboard {
 		}
 
 		if ( empty( $activity ) ) {
-			echo '<p>' . esc_html( __( 'No recent activity to show.', 'client-handoff' ) ) . '</p>';
+			echo '<div class="ch-widget-section ch-activity-feed">';
+			echo '<h3>' . esc_html( __( 'Recent Activity', 'client-handoff' ) ) . '</h3>';
+			echo '<p class="ch-empty-state">' . esc_html( __( 'No recent activity to show.', 'client-handoff' ) ) . '</p>';
+			echo '</div>';
 			return;
 		}
 
-		echo '<div class="ch-activity-feed">';
+		echo '<div class="ch-widget-section ch-activity-feed">';
 		echo '<h3>' . esc_html( __( 'Recent Activity', 'client-handoff' ) ) . '</h3>';
 		echo '<ul>';
 		foreach ( $activity as $item ) {

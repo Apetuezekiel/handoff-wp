@@ -172,22 +172,60 @@ class CH_Setup_Flow {
 		);
 		$title = isset( $titles[ $step ] ) ? $titles[ $step ] : $step;
 		?>
-		<div class="wrap ch-setup-flow">
-			<h1>
-				<?php echo esc_html( sprintf(
-					/* translators: 1: current step number, 2: total steps, 3: step title */
-					__( 'Client Handoff Setup — Step %1$d of %2$d: %3$s', 'client-handoff' ),
-					$step_index,
-					$step_count,
-					$title
-				) ); ?>
-			</h1>
+		<div class="wrap ch-admin-page ch-setup-flow">
 
+			<!-- Gradient page header -->
+			<div class="ch-page-header">
+				<span class="dashicons dashicons-businessman"></span>
+				<div class="ch-page-header__text">
+					<h1><?php echo esc_html( sprintf(
+						/* translators: 1: current step number, 2: total steps */
+						__( 'Client Handoff Setup — Step %1$d of %2$d: %3$s', 'client-handoff' ),
+						$step_index,
+						$step_count,
+						$title
+					) ); ?></h1>
+					<p><?php echo esc_html( $title ); ?></p>
+				</div>
+			</div>
+
+			<!-- Progress stepper -->
+			<div class="ch-stepper">
+				<?php foreach ( self::STEPS as $s ) :
+					$s_index  = $this->get_step_index( $s );
+					$is_done   = $s_index < $step_index;
+					$is_active = $s === $step;
+					$s_titles  = array(
+						'roles'        => __( 'Roles', 'client-handoff' ),
+						'dashboard'    => __( 'Dashboard', 'client-handoff' ),
+						'restrictions' => __( 'Restrictions', 'client-handoff' ),
+						'activate'     => __( 'Activate', 'client-handoff' ),
+					);
+					$s_label = isset( $s_titles[ $s ] ) ? $s_titles[ $s ] : ucfirst( $s );
+					$css_class = 'ch-stepper__step';
+					if ( $is_done )   { $css_class .= ' ch-stepper__step--done'; }
+					if ( $is_active ) { $css_class .= ' ch-stepper__step--active'; }
+					?>
+					<div class="<?php echo esc_attr( $css_class ); ?>">
+						<div class="ch-stepper__dot">
+							<?php if ( $is_done ) : ?>
+								<span class="dashicons dashicons-yes" style="font-size:14px;width:14px;height:14px;"></span>
+							<?php else : ?>
+								<?php echo esc_html( $s_index ); ?>
+							<?php endif; ?>
+						</div>
+						<span class="ch-stepper__label"><?php echo esc_html( $s_label ); ?></span>
+					</div>
+				<?php endforeach; ?>
+			</div>
+
+			<!-- Step content card -->
 			<?php if ( 'activate' === $step ) : ?>
 				<?php $this->render_activate_step( $done_url ); ?>
 			<?php else : ?>
 				<?php $this->render_settings_step( $step, $next_url ); ?>
 			<?php endif; ?>
+
 		</div>
 		<?php
 	}
@@ -205,17 +243,18 @@ class CH_Setup_Flow {
 	private function render_settings_step( string $step, string $next_url ): void {
 		$page_slug = 'client-handoff-' . $step;
 		?>
-		<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
-			<?php settings_fields( CH_Core::OPTION_CONFIG ); ?>
-			<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( $next_url ); ?>">
-			<?php do_settings_sections( $page_slug ); ?>
-			<?php submit_button( __( 'Save &amp; Continue', 'client-handoff' ) ); ?>
-		</form>
-		<p>
-			<a href="<?php echo esc_url( $next_url ); ?>">
+		<div class="ch-card ch-setup-form-card">
+			<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
+				<?php settings_fields( CH_Core::OPTION_CONFIG ); ?>
+				<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( $next_url ); ?>">
+				<?php do_settings_sections( $page_slug ); ?>
+				<?php submit_button( __( 'Save &amp; Continue', 'client-handoff' ) ); ?>
+			</form>
+			<a class="ch-skip-link" href="<?php echo esc_url( $next_url ); ?>">
+				<span class="dashicons dashicons-arrow-right-alt2" style="font-size:14px;width:14px;height:14px;margin-top:2px;"></span>
 				<?php echo esc_html( __( 'Skip this step', 'client-handoff' ) ); ?>
 			</a>
-		</p>
+		</div>
 		<?php
 	}
 
@@ -241,53 +280,61 @@ class CH_Setup_Flow {
 		$protected_plugins = isset( $enforcement['protected_plugins'] )
 			? (array) $enforcement['protected_plugins'] : array();
 		?>
-		<div class="ch-setup-summary">
-			<h2><?php echo esc_html( __( 'Configuration Summary', 'client-handoff' ) ); ?></h2>
-			<ul>
-				<li>
-					<strong><?php echo esc_html( __( 'Protected roles:', 'client-handoff' ) ); ?></strong>
-					<?php echo esc_html( count( $protected_roles ) ); ?>
-				</li>
-				<li>
-					<strong><?php echo esc_html( __( 'Admin roles:', 'client-handoff' ) ); ?></strong>
-					<?php echo esc_html( count( $admin_roles ) ); ?>
-				</li>
-				<li>
-					<strong><?php echo esc_html( __( 'Client dashboard:', 'client-handoff' ) ); ?></strong>
-					<?php echo esc_html( $dashboard_enabled
-						? __( 'Enabled', 'client-handoff' )
-						: __( 'Disabled', 'client-handoff' ) ); ?>
-				</li>
-				<li>
-					<strong><?php echo esc_html( __( 'Blocked capabilities:', 'client-handoff' ) ); ?></strong>
-					<?php echo esc_html( count( $blocked_caps ) ); ?>
-				</li>
-				<li>
-					<strong><?php echo esc_html( __( 'Protected plugins:', 'client-handoff' ) ); ?></strong>
-					<?php echo esc_html( count( $protected_plugins ) ); ?>
-				</li>
-			</ul>
+		<div class="ch-card">
+			<h2 class="ch-card__title">
+				<span class="dashicons dashicons-chart-bar"></span>
+				<?php echo esc_html( __( 'Configuration Summary', 'client-handoff' ) ); ?>
+			</h2>
+			<p class="ch-card__description"><?php echo esc_html( __( 'Review your settings before activating handoff mode.', 'client-handoff' ) ); ?></p>
+
+			<!-- Stat grid cards (counts) -->
+			<div class="ch-stat-grid">
+				<div class="ch-stat-card">
+					<span class="ch-stat-card__value"><?php echo esc_html( count( $protected_roles ) ); ?></span>
+					<span class="ch-stat-card__label"><?php echo esc_html( __( 'Protected roles:', 'client-handoff' ) ); ?></span>
+				</div>
+				<div class="ch-stat-card">
+					<span class="ch-stat-card__value"><?php echo esc_html( count( $admin_roles ) ); ?></span>
+					<span class="ch-stat-card__label"><?php echo esc_html( __( 'Admin roles:', 'client-handoff' ) ); ?></span>
+				</div>
+				<div class="ch-stat-card">
+					<span class="ch-stat-card__value"><?php echo esc_html( count( $blocked_caps ) ); ?></span>
+					<span class="ch-stat-card__label"><?php echo esc_html( __( 'Blocked capabilities:', 'client-handoff' ) ); ?></span>
+				</div>
+				<div class="ch-stat-card">
+					<span class="ch-stat-card__value"><?php echo esc_html( count( $protected_plugins ) ); ?></span>
+					<span class="ch-stat-card__label"><?php echo esc_html( __( 'Protected plugins:', 'client-handoff' ) ); ?></span>
+				</div>
+				<div class="ch-stat-card">
+					<span class="ch-stat-card__value"><?php echo $dashboard_enabled ? '✓' : '—'; ?></span>
+					<span class="ch-stat-card__label"><?php echo esc_html( __( 'Client dashboard:', 'client-handoff' ) ); ?></span>
+				</div>
+			</div>
+
+			<hr class="ch-card__divider">
+
+			<!-- Activate form -->
+			<div class="ch-activate-actions">
+				<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
+					<?php settings_fields( CH_Core::OPTION_CONFIG ); ?>
+					<input type="hidden"
+					       name="<?php echo esc_attr( CH_Core::OPTION_CONFIG ); ?>[_ch_setup_complete]"
+					       value="1">
+					<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( $done_url ); ?>">
+					<?php submit_button( __( 'Activate Handoff Mode', 'client-handoff' ), 'primary large', 'submit', false ); ?>
+				</form>
+
+				<!-- Dismiss form (mark complete without enabling) -->
+				<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
+					<?php settings_fields( CH_Core::OPTION_CONFIG ); ?>
+					<input type="hidden"
+					       name="<?php echo esc_attr( CH_Core::OPTION_CONFIG ); ?>[_ch_setup_dismiss]"
+					       value="1">
+					<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( $done_url ); ?>">
+					<?php submit_button( __( 'Skip without activating', 'client-handoff' ), 'secondary', 'submit', false ); ?>
+				</form>
+			</div>
 		</div>
-
-		<!-- Activate form -->
-		<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
-			<?php settings_fields( CH_Core::OPTION_CONFIG ); ?>
-			<input type="hidden"
-			       name="<?php echo esc_attr( CH_Core::OPTION_CONFIG ); ?>[_ch_setup_complete]"
-			       value="1">
-			<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( $done_url ); ?>">
-			<?php submit_button( __( 'Activate Handoff Mode', 'client-handoff' ), 'primary large' ); ?>
-		</form>
-
-		<!-- Dismiss form (mark complete without enabling) -->
-		<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>" style="margin-top:1em">
-			<?php settings_fields( CH_Core::OPTION_CONFIG ); ?>
-			<input type="hidden"
-			       name="<?php echo esc_attr( CH_Core::OPTION_CONFIG ); ?>[_ch_setup_dismiss]"
-			       value="1">
-			<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( $done_url ); ?>">
-			<?php submit_button( __( 'Skip without activating', 'client-handoff' ), 'secondary' ); ?>
-		</form>
 		<?php
 	}
 }

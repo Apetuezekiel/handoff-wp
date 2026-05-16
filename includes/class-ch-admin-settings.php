@@ -70,8 +70,30 @@ class CH_Admin_Settings {
 	 * Register WordPress hooks.
 	 */
 	public function register_hooks() {
-		add_action( 'admin_menu', array( $this, 'register_page' ) );
-		add_action( 'admin_init', array( $this, 'register_settings' ) );
+		add_action( 'admin_menu',             array( $this, 'register_page' ) );
+		add_action( 'admin_init',             array( $this, 'register_settings' ) );
+		add_action( 'admin_enqueue_scripts',  array( $this, 'enqueue_assets' ) );
+	}
+
+	/**
+	 * Enqueue the plugin stylesheet on our own admin page and the dashboard.
+	 *
+	 * @param string $hook_suffix The current admin page hook suffix.
+	 */
+	public function enqueue_assets( $hook_suffix ) {
+		$allowed = array(
+			'toplevel_page_client-handoff',
+			'index.php', // WP dashboard (for the client widget).
+		);
+		if ( ! in_array( $hook_suffix, $allowed, true ) ) {
+			return;
+		}
+		wp_enqueue_style(
+			'client-handoff-admin',
+			plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin.css',
+			array(),
+			'1.0.0'
+		);
 	}
 
 	// -------------------------------------------------------------------------
@@ -266,8 +288,18 @@ class CH_Admin_Settings {
 
 		$active = $this->get_active_tab();
 		?>
-		<div class="wrap">
-			<h1><?php echo esc_html( __( 'Client Handoff', 'client-handoff' ) ); ?></h1>
+		<div class="wrap ch-admin-page">
+
+			<!-- Page header -->
+			<div class="ch-page-header">
+				<span class="dashicons dashicons-businessman"></span>
+				<div class="ch-page-header__text">
+					<h1><?php echo esc_html( __( 'Client Handoff', 'client-handoff' ) ); ?></h1>
+					<p><?php echo esc_html( __( 'Configure and manage the client handoff experience.', 'client-handoff' ) ); ?></p>
+				</div>
+			</div>
+
+			<!-- Tab navigation -->
 			<nav class="nav-tab-wrapper">
 				<?php foreach ( self::TABS as $tab ) : ?>
 					<a href="<?php echo esc_url( admin_url( 'admin.php?page=client-handoff&tab=' . $tab ) ); ?>"
@@ -277,25 +309,28 @@ class CH_Admin_Settings {
 				<?php endforeach; ?>
 			</nav>
 
-			<form method="post" action="options.php">
-				<?php
-				if ( 'roles' === $active ) {
-					settings_fields( CH_Core::OPTION_CONFIG );
-					do_settings_sections( 'client-handoff-roles' );
-					submit_button();
-				} elseif ( 'restrictions' === $active ) {
-					settings_fields( CH_Core::OPTION_CONFIG );
-					do_settings_sections( 'client-handoff-restrictions' );
-					submit_button();
-				} elseif ( 'dashboard' === $active ) {
-					settings_fields( CH_Core::OPTION_CONFIG );
-					do_settings_sections( 'client-handoff-dashboard' );
-					submit_button();
-				} else {
-					echo '<p>' . esc_html( __( 'This tab is coming soon.', 'client-handoff' ) ) . '</p>';
-				}
-				?>
-			</form>
+			<!-- Main settings card -->
+			<div class="ch-card">
+				<form method="post" action="options.php">
+					<?php
+					if ( 'roles' === $active ) {
+						settings_fields( CH_Core::OPTION_CONFIG );
+						do_settings_sections( 'client-handoff-roles' );
+						submit_button();
+					} elseif ( 'restrictions' === $active ) {
+						settings_fields( CH_Core::OPTION_CONFIG );
+						do_settings_sections( 'client-handoff-restrictions' );
+						submit_button();
+					} elseif ( 'dashboard' === $active ) {
+						settings_fields( CH_Core::OPTION_CONFIG );
+						do_settings_sections( 'client-handoff-dashboard' );
+						submit_button();
+					} else {
+						echo '<p>' . esc_html( __( 'This tab is coming soon.', 'client-handoff' ) ) . '</p>';
+					}
+					?>
+				</form>
+			</div>
 
 			<?php $this->render_export_import_section(); ?>
 
@@ -311,6 +346,7 @@ class CH_Admin_Settings {
 	public function render_protected_roles_field() {
 		$saved = (array) $this->core->get( 'protected_roles' );
 		$roles = wp_roles()->get_names();
+		echo '<div class="ch-checkbox-list">';
 		foreach ( $roles as $slug => $name ) {
 			printf(
 				'<label><input type="checkbox" name="%s[protected_roles][]" value="%s"%s> %s</label><br>',
@@ -320,6 +356,7 @@ class CH_Admin_Settings {
 				esc_html( $name )
 			);
 		}
+		echo '</div>';
 	}
 
 	/**
@@ -328,6 +365,7 @@ class CH_Admin_Settings {
 	public function render_admin_roles_field() {
 		$saved = (array) $this->core->get( 'admin_roles' );
 		$roles = wp_roles()->get_names();
+		echo '<div class="ch-checkbox-list">';
 		foreach ( $roles as $slug => $name ) {
 			printf(
 				'<label><input type="checkbox" name="%s[admin_roles][]" value="%s"%s> %s</label><br>',
@@ -337,6 +375,7 @@ class CH_Admin_Settings {
 				esc_html( $name )
 			);
 		}
+		echo '</div>';
 	}
 
 	/**
@@ -351,6 +390,7 @@ class CH_Admin_Settings {
 		$saved       = isset( $enforcement['blocked_caps'] ) ? (array) $enforcement['blocked_caps'] : array();
 		$defaults    = CH_Core::DEFAULTS['enforcement']['blocked_caps'];
 
+		echo '<div class="ch-checkbox-list">';
 		foreach ( $defaults as $cap ) {
 			printf(
 				'<label><input type="checkbox" name="%s[enforcement][blocked_caps][]" value="%s"%s> <code>%s</code></label><br>',
@@ -360,6 +400,7 @@ class CH_Admin_Settings {
 				esc_html( $cap )
 			);
 		}
+		echo '</div>';
 	}
 
 	/**
@@ -383,6 +424,7 @@ class CH_Admin_Settings {
 			return;
 		}
 
+		echo '<div class="ch-checkbox-list">';
 		foreach ( $plugins as $basename => $data ) {
 			$name = isset( $data['Name'] ) ? $data['Name'] : $basename;
 			printf(
@@ -393,6 +435,7 @@ class CH_Admin_Settings {
 				esc_html( $name )
 			);
 		}
+		echo '</div>';
 	}
 
 	// -------------------------------------------------------------------------
@@ -713,7 +756,7 @@ class CH_Admin_Settings {
 		$dashboard = $this->core->get( 'dashboard' );
 		$checked   = ! empty( $dashboard['enabled'] );
 		printf(
-			'<label><input type="checkbox" name="%s[dashboard][enabled]" value="1"%s> %s</label>',
+			'<label class="ch-toggle-row"><input type="checkbox" name="%s[dashboard][enabled]" value="1"%s> <span>%s</span></label>',
 			esc_attr( CH_Core::OPTION_CONFIG ),
 			$checked ? ' checked' : '',
 			esc_html( __( 'Replace the WordPress dashboard with the client dashboard widget', 'client-handoff' ) )
@@ -730,7 +773,7 @@ class CH_Admin_Settings {
 		$dashboard = $this->core->get( 'dashboard' );
 		$value     = isset( $dashboard['welcome_message'] ) ? $dashboard['welcome_message'] : '';
 		printf(
-			'<textarea name="%s[dashboard][welcome_message]" rows="5" cols="50">%s</textarea>
+			'<textarea name="%s[dashboard][welcome_message]" rows="5" class="ch-textarea">%s</textarea>
 			<p class="description">%s</p>',
 			esc_attr( CH_Core::OPTION_CONFIG ),
 			esc_textarea( $value ),
@@ -750,7 +793,7 @@ class CH_Admin_Settings {
 		$saved_links = isset( $dashboard['quick_links'] ) && is_array( $dashboard['quick_links'] )
 			? $dashboard['quick_links'] : array();
 
-		echo '<table class="widefat" style="max-width:600px">';
+		echo '<table class="ch-quick-links-table">';
 		echo '<thead><tr>';
 		echo '<th>' . esc_html( __( 'Label', 'client-handoff' ) ) . '</th>';
 		echo '<th>' . esc_html( __( 'URL', 'client-handoff' ) ) . '</th>';
@@ -792,24 +835,26 @@ class CH_Admin_Settings {
 		$email = isset( $contact['email'] ) ? $contact['email'] : '';
 		$url   = isset( $contact['url'] )   ? $contact['url']   : '';
 
+		echo '<div class="ch-contact-grid">';
 		printf(
-			'<p><label>%s<br><input type="text"  name="%s[dashboard][developer_contact][name]"  value="%s" class="regular-text"></label></p>',
+			'<label class="ch-contact-grid__full">%s<input type="text" name="%s[dashboard][developer_contact][name]" value="%s" class="regular-text"></label>',
 			esc_html( __( 'Name', 'client-handoff' ) ),
 			esc_attr( CH_Core::OPTION_CONFIG ),
 			esc_attr( $name )
 		);
 		printf(
-			'<p><label>%s<br><input type="email" name="%s[dashboard][developer_contact][email]" value="%s" class="regular-text"></label></p>',
+			'<label>%s<input type="email" name="%s[dashboard][developer_contact][email]" value="%s" class="regular-text"></label>',
 			esc_html( __( 'Email', 'client-handoff' ) ),
 			esc_attr( CH_Core::OPTION_CONFIG ),
 			esc_attr( $email )
 		);
 		printf(
-			'<p><label>%s<br><input type="url"   name="%s[dashboard][developer_contact][url]"   value="%s" class="regular-text"></label></p>',
+			'<label>%s<input type="url" name="%s[dashboard][developer_contact][url]" value="%s" class="regular-text"></label>',
 			esc_html( __( 'Website URL', 'client-handoff' ) ),
 			esc_attr( CH_Core::OPTION_CONFIG ),
 			esc_attr( $url )
 		);
+		echo '</div>';
 	}
 
 	/**
@@ -819,7 +864,7 @@ class CH_Admin_Settings {
 		$dashboard = $this->core->get( 'dashboard' );
 		$checked   = ! empty( $dashboard['show_site_status'] );
 		printf(
-			'<label><input type="checkbox" name="%s[dashboard][show_site_status]" value="1"%s> %s</label>',
+			'<label class="ch-toggle-row"><input type="checkbox" name="%s[dashboard][show_site_status]" value="1"%s> <span>%s</span></label>',
 			esc_attr( CH_Core::OPTION_CONFIG ),
 			$checked ? ' checked' : '',
 			esc_html( __( 'Show WordPress version, SSL status, and pending plugin updates', 'client-handoff' ) )
@@ -860,27 +905,39 @@ class CH_Admin_Settings {
 			echo '</p></div>';
 		}
 		?>
-		<hr>
-		<h2><?php echo esc_html( __( 'Export / Import Configuration', 'client-handoff' ) ); ?></h2>
-		<p><?php echo esc_html( __( 'Export the current configuration as a JSON file, or import a previously exported file. Import overwrites all settings.', 'client-handoff' ) ); ?></p>
+		<div class="ch-card">
+			<p class="ch-card__title">
+				<span class="dashicons dashicons-database-export"></span>
+				<?php echo esc_html( __( 'Export / Import Configuration', 'client-handoff' ) ); ?>
+			</p>
+			<p class="ch-card__description"><?php echo esc_html( __( 'Export the current configuration as a JSON file, or import a previously exported file. Import overwrites all settings.', 'client-handoff' ) ); ?></p>
 
-		<div style="display:flex;gap:2em;flex-wrap:wrap;align-items:flex-start">
+			<div class="ch-io-grid">
 
-			<!-- Export -->
-			<form method="post" action="<?php echo esc_url( $admin_post_url ); ?>">
-				<input type="hidden" name="action" value="ch_export_config">
-				<?php wp_nonce_field( 'ch_export_config' ); ?>
-				<?php submit_button( __( 'Export Configuration', 'client-handoff' ), 'secondary', 'ch-export-btn', false ); ?>
-			</form>
+				<!-- Export card -->
+				<div class="ch-io-card">
+					<h3><span class="dashicons dashicons-upload"></span><?php echo esc_html( __( 'Export', 'client-handoff' ) ); ?></h3>
+					<p><?php echo esc_html( __( 'Download a JSON backup of the current settings.', 'client-handoff' ) ); ?></p>
+					<form method="post" action="<?php echo esc_url( $admin_post_url ); ?>">
+						<input type="hidden" name="action" value="ch_export_config">
+						<?php wp_nonce_field( 'ch_export_config' ); ?>
+						<?php submit_button( __( 'Export Configuration', 'client-handoff' ), 'secondary', 'ch-export-btn', false ); ?>
+					</form>
+				</div>
 
-			<!-- Import -->
-			<form method="post" action="<?php echo esc_url( $admin_post_url ); ?>" enctype="multipart/form-data">
-				<input type="hidden" name="action" value="ch_import_config">
-				<?php wp_nonce_field( 'ch_import_config' ); ?>
-				<input type="file" name="ch_config_file" accept=".json" style="vertical-align:middle">
-				<?php submit_button( __( 'Import Configuration', 'client-handoff' ), 'secondary', 'ch-import-btn', false ); ?>
-			</form>
+				<!-- Import card -->
+				<div class="ch-io-card">
+					<h3><span class="dashicons dashicons-download"></span><?php echo esc_html( __( 'Import', 'client-handoff' ) ); ?></h3>
+					<p><?php echo esc_html( __( 'Restore settings from a previously exported JSON file.', 'client-handoff' ) ); ?></p>
+					<form method="post" action="<?php echo esc_url( $admin_post_url ); ?>" enctype="multipart/form-data">
+						<input type="hidden" name="action" value="ch_import_config">
+						<?php wp_nonce_field( 'ch_import_config' ); ?>
+						<input type="file" name="ch_config_file" accept=".json">
+						<?php submit_button( __( 'Import Configuration', 'client-handoff' ), 'secondary', 'ch-import-btn', false ); ?>
+					</form>
+				</div>
 
+			</div>
 		</div>
 		<?php
 	}
@@ -907,16 +964,20 @@ class CH_Admin_Settings {
 			return;
 		}
 		?>
-		<hr>
-		<h2><?php echo esc_html( __( 'Setup Wizard', 'client-handoff' ) ); ?></h2>
-		<p><?php echo esc_html( __( 'Re-run the setup wizard to update your onboarding configuration.', 'client-handoff' ) ); ?></p>
-		<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
-			<?php settings_fields( CH_Core::OPTION_CONFIG ); ?>
-			<input type="hidden"
-			       name="<?php echo esc_attr( CH_Core::OPTION_CONFIG ); ?>[_ch_setup_rerun]"
-			       value="1">
-			<?php submit_button( __( 'Re-run Setup', 'client-handoff' ), 'secondary' ); ?>
-		</form>
+		<div class="ch-card ch-card--amber">
+			<p class="ch-card__title">
+				<span class="dashicons dashicons-redo"></span>
+				<?php echo esc_html( __( 'Setup Wizard', 'client-handoff' ) ); ?>
+			</p>
+			<p class="ch-card__description"><?php echo esc_html( __( 'Re-run the setup wizard to update your onboarding configuration.', 'client-handoff' ) ); ?></p>
+			<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
+				<?php settings_fields( CH_Core::OPTION_CONFIG ); ?>
+				<input type="hidden"
+				       name="<?php echo esc_attr( CH_Core::OPTION_CONFIG ); ?>[_ch_setup_rerun]"
+				       value="1">
+				<?php submit_button( __( 'Re-run Setup', 'client-handoff' ), 'secondary' ); ?>
+			</form>
+		</div>
 		<?php
 	}
 }
