@@ -28,6 +28,7 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-menu-manager.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-admin-bar.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-notifications.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-admin-settings.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-setup-flow.php';
 require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-dashboard.php';
 
 // ---- Plugin constants -------------------------------------------------------
@@ -60,7 +61,8 @@ add_action( 'plugins_loaded', static function () {
 	$menu_manager  = new CH_Menu_Manager( $core );
 	$admin_bar     = new CH_Admin_Bar( $core );
 	$notifications = new CH_Notifications( $core );
-	$settings      = new CH_Admin_Settings( $core );
+	$setup_flow    = new CH_Setup_Flow( $core );
+	$settings      = new CH_Admin_Settings( $core, $setup_flow );
 	$dashboard     = new CH_Dashboard( $core );
 	$enforcer->register_hooks();
 	$protection->register_hooks();

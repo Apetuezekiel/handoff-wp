@@ -49,10 +49,21 @@ class CH_Admin_Settings {
 	private $core;
 
 	/**
-	 * @param CH_Core $core
+	 * @var CH_Setup_Flow|null  Null when the setup flow class is unavailable
+	 *                           or when constructing without a flow instance
+	 *                           (e.g. in unit tests that pre-date the setup
+	 *                           flow). Optional to avoid requiring test updates
+	 *                           across 30+ existing test setups.
 	 */
-	public function __construct( $core ) {
-		$this->core = $core;
+	private $setup_flow;
+
+	/**
+	 * @param CH_Core           $core
+	 * @param CH_Setup_Flow|null $setup_flow  Optional; null → tabbed page always shown.
+	 */
+	public function __construct( $core, $setup_flow = null ) {
+		$this->core       = $core;
+		$this->setup_flow = $setup_flow;
 	}
 
 	/**
@@ -205,12 +216,26 @@ class CH_Admin_Settings {
 	/**
 	 * Return the active tab slug, defaulting to 'roles'.
 	 *
+	 * When the setup flow is active, ch_step takes priority over the tab
+	 * parameter for the three configurable steps (roles, dashboard,
+	 * restrictions). This ensures register_settings()'s tab-gated section
+	 * and field registrations fire for the correct step during the flow.
+	 *
+	 * 'activate' is intentionally excluded: it has no Settings API sections
+	 * or fields — its form uses custom hidden inputs only.
+	 *
 	 * sanitize_key() strips anything outside [a-z0-9_-]; the allowlist check
-	 * then rejects anything not in TABS.
+	 * then rejects anything not in TABS (or the ch_step allowlist).
 	 *
 	 * @return string
 	 */
 	public function get_active_tab() {
+		if ( isset( $_GET['ch_step'] ) ) {
+			$step = sanitize_key( $_GET['ch_step'] );
+			if ( in_array( $step, array( 'roles', 'dashboard', 'restrictions' ), true ) ) {
+				return $step;
+			}
+		}
 		$tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : '';
 		return in_array( $tab, self::TABS, true ) ? $tab : 'roles';
 	}
@@ -230,6 +255,12 @@ class CH_Admin_Settings {
 	public function render_page() {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			wp_die( esc_html__( 'You do not have permission to access this page.', 'client-handoff' ) );
+			return;
+		}
+
+		// Delegate to setup flow when first-run experience is active.
+		if ( null !== $this->setup_flow && $this->setup_flow->should_show() ) {
+			$this->setup_flow->render( $this );
 			return;
 		}
 
@@ -396,6 +427,22 @@ class CH_Admin_Settings {
 		// Dashboard tab fields.
 		if ( isset( $input['dashboard'] ) && is_array( $input['dashboard'] ) ) {
 			$partial['dashboard'] = $this->sanitize_dashboard( $input['dashboard'] );
+		}
+
+		// Activate-step marker: enable handoff AND mark setup complete.
+		// This clause is mutually exclusive with field-data clauses — the
+		// activate form carries no field data, only the control marker.
+		if ( ! empty( $input['_ch_setup_complete'] ) ) {
+			$partial['enabled']         = true;
+			$partial['setup_completed'] = true;
+		}
+
+		// Dismiss marker: mark setup complete without enabling handoff.
+		// 'enabled' is intentionally omitted — leaving it to merge from the
+		// saved value preserves whatever the developer set. Matches the same
+		// no-enabled rule the Roles tab follows (see sanitize_roles docblock).
+		if ( ! empty( $input['_ch_setup_dismiss'] ) ) {
+			$partial['setup_completed'] = true;
 		}
 
 		return $this->core->merge_into_current( $partial );
