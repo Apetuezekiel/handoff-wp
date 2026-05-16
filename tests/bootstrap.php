@@ -169,3 +169,4 @@ require_once dirname( __DIR__ ) . '/includes/class-ch-enforcer.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-plugin-protection.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-menu-manager.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-admin-bar.php';
+require_once dirname( __DIR__ ) . '/includes/class-ch-notifications.php';
