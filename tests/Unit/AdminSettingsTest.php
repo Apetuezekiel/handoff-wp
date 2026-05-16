@@ -1129,4 +1129,130 @@ class AdminSettingsTest extends TestCase {
 		$this->assertNotContains( 'client-handoff-roles',        $field_pages, 'Roles fields must not be registered on the dashboard tab' );
 		$this->assertNotContains( 'client-handoff-restrictions', $field_pages, 'Restrictions fields must not be registered on the dashboard tab' );
 	}
+
+	// =========================================================================
+	// Tests S9–S12: setup flow — get_active_tab + sanitize markers
+	// =========================================================================
+
+	// -------------------------------------------------------------------------
+	// S9 — get_active_tab() honors ch_step for configurable steps only
+	// -------------------------------------------------------------------------
+
+	/**
+	 * S9 — ch_step overrides the tab param for 'roles', 'dashboard',
+	 * 'restrictions'; 'activate' falls through to the standard tab logic.
+	 *
+	 * 'activate' is excluded from the ch_step routing because it has no
+	 * Settings API sections to register — its form uses custom hidden inputs.
+	 */
+	public function test_get_active_tab_returns_ch_step_when_set() {
+		$core     = $this->make_core();
+		$settings = new CH_Admin_Settings( $core );
+
+		// 'restrictions' is a configurable step → must be returned directly.
+		$_GET['ch_step'] = 'restrictions';
+		$this->assertSame( 'restrictions', $settings->get_active_tab(),
+			"ch_step='restrictions' must be returned as the active tab" );
+
+		// 'activate' is NOT a configurable step → must fall through to tab logic.
+		// No $_GET['tab'] set → defaults to 'roles'.
+		$_GET = array( 'ch_step' => 'activate' );
+		$this->assertSame( 'roles', $settings->get_active_tab(),
+			"ch_step='activate' must fall through to the default tab ('roles')" );
+	}
+
+	// -------------------------------------------------------------------------
+	// S10 — _ch_setup_complete sets enabled=true AND setup_completed=true
+	// -------------------------------------------------------------------------
+
+	/**
+	 * S10 — sanitize() with _ch_setup_complete=1 enables handoff mode and
+	 * marks the setup flow as complete.
+	 *
+	 * The activate form carries no field data, only the control marker. The
+	 * field-detection clauses (roles, restrictions, dashboard) must not fire
+	 * for this input.
+	 */
+	public function test_sanitize_setup_complete_marker_sets_enabled_and_setup_completed() {
+		$core     = $this->make_core( $this->base_config() );
+		$settings = new CH_Admin_Settings( $core );
+
+		$result = $settings->sanitize( array(
+			'_ch_setup_complete' => '1',
+		) );
+
+		$this->assertTrue( $result['enabled'],         'enabled must be true after _ch_setup_complete' );
+		$this->assertTrue( $result['setup_completed'], 'setup_completed must be true after _ch_setup_complete' );
+	}
+
+	// -------------------------------------------------------------------------
+	// S11 — _ch_setup_dismiss sets setup_completed=true but leaves enabled alone
+	// -------------------------------------------------------------------------
+
+	/**
+	 * S11 — sanitize() with _ch_setup_dismiss=1 marks setup complete without
+	 * enabling handoff mode.
+	 *
+	 * 'enabled' is intentionally absent from the partial — merge_into_current
+	 * preserves the saved value (false from base_config/defaults). This mirrors
+	 * the same no-enabled rule that sanitize_roles() follows.
+	 */
+	public function test_sanitize_setup_dismiss_marker_sets_setup_completed_only() {
+		$core     = $this->make_core( $this->base_config() );
+		$settings = new CH_Admin_Settings( $core );
+
+		$result = $settings->sanitize( array(
+			'_ch_setup_dismiss' => '1',
+		) );
+
+		$this->assertTrue( $result['setup_completed'],
+			'setup_completed must be true after _ch_setup_dismiss' );
+		$this->assertFalse( $result['enabled'],
+			'enabled must remain false after _ch_setup_dismiss (dismiss does not enable)' );
+	}
+
+	// -------------------------------------------------------------------------
+	// S12 — normal Roles save does not touch enabled or setup_completed
+	// -------------------------------------------------------------------------
+
+	/**
+	 * S12 — a Roles-tab form submission during the setup flow must not
+	 * accidentally clobber enabled or setup_completed.
+	 *
+	 * Saved config has enabled=false and setup_completed=true (user is partway
+	 * through the setup flow but already on their second run or a re-save).
+	 * Submitting only Roles-tab data must preserve both values exactly.
+	 *
+	 * This is the critical regression test for the no-enabled rule: a step
+	 * save that clobbers setup_completed would loop the user back into the
+	 * flow on their next page load.
+	 */
+	public function test_sanitize_without_setup_markers_does_not_touch_enabled_or_setup_completed() {
+		$saved = array(
+			'enabled'         => false,
+			'setup_completed' => true,
+			'protected_roles' => array(),
+			'admin_roles'     => array(),
+		);
+		$core     = $this->make_core( $saved );
+		$settings = new CH_Admin_Settings( $core );
+
+		// Provide a valid wp_roles() stub so sanitize_roles can filter slugs.
+		$this->mock_wp_roles( array( 'subscriber' => array( 'read' => true ) ) );
+
+		$result = $settings->sanitize( array(
+			'protected_roles' => array( 'subscriber' ),
+			'admin_roles'     => array(),
+			// No _ch_setup_complete or _ch_setup_dismiss markers.
+		) );
+
+		$this->assertFalse(
+			$result['enabled'],
+			'enabled must remain false — a Roles save must not enable handoff'
+		);
+		$this->assertTrue(
+			$result['setup_completed'],
+			'setup_completed must be preserved — a Roles save must not re-trigger the flow'
+		);
+	}
 }
