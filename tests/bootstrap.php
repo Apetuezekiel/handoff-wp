@@ -254,4 +254,5 @@ require_once dirname( __DIR__ ) . '/includes/class-ch-menu-manager.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-admin-bar.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-notifications.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-admin-settings.php';
+require_once dirname( __DIR__ ) . '/includes/class-ch-setup-flow.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-dashboard.php';
