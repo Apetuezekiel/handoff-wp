@@ -1,5 +1,7 @@
 # Client Handoff
 
+![CI](https://github.com/Apetuezekiel/handoff-wp/actions/workflows/ci.yml/badge.svg)
+
 A WordPress plugin for structured developer-to-client handoff. Locks down the admin for non-technical clients without locking out the developer — enforced role-based restrictions, cosmetic simplification, and a clean operational dashboard.
 
 ## What it does
