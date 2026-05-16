@@ -107,7 +107,7 @@ class CH_Setup_Flow {
 	 * @return string
 	 */
 	public function get_current_step(): string {
-		$step = isset( $_GET['ch_step'] ) ? sanitize_key( $_GET['ch_step'] ) : '';
+		$step = isset( $_GET['ch_step'] ) ? sanitize_key( $_GET['ch_step'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display routing; form submission goes through options.php with its own nonce.
 		return in_array( $step, self::STEPS, true ) ? $step : 'roles';
 	}
 
