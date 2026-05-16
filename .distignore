@@ -1,0 +1,12 @@
+# Files excluded from the WordPress.org build/distribution package.
+# This file itself is also excluded.
+.distignore
+.DS_Store
+.git
+.phpunit.result.cache
+.claude/
+composer.json
+composer.lock
+phpunit.xml
+tests/
+vendor/

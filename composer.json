@@ -1,0 +1,25 @@
+{
+    "name": "zicstack/client-handoff",
+    "description": "Client Handoff WordPress plugin — dev/test tooling",
+    "type": "wordpress-plugin",
+    "license": "GPL-2.0-or-later",
+    "require": {
+        "php": ">=7.4"
+    },
+    "require-dev": {
+        "10up/wp_mock": "^1.0",
+        "phpunit/phpunit": "^9.6 || ^10.5"
+    },
+    "autoload-dev": {
+        "classmap": [
+            "tests/"
+        ]
+    },
+    "scripts": {
+        "test": "phpunit --testdox"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    }
+}
