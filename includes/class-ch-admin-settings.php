@@ -296,6 +296,9 @@ class CH_Admin_Settings {
 				}
 				?>
 			</form>
+
+			<?php $this->render_export_import_section(); ?>
+
 		</div>
 		<?php
 	}
@@ -388,6 +391,61 @@ class CH_Admin_Settings {
 				esc_html( $name )
 			);
 		}
+	}
+
+	// -------------------------------------------------------------------------
+	// Import sanitizer
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Sanitize a JSON-decoded config array for import.
+	 *
+	 * This is the only new public API surface added by the import/export pass.
+	 * It aggregates the private per-tab sanitizers — same validation logic used
+	 * by the settings forms — so the import path never bypasses field rules.
+	 *
+	 * OVERWRITE SEMANTICS
+	 * The returned array is passed to CH_Core::update_config(), which merges it
+	 * against DEFAULTS. Fields absent from the JSON fall back to DEFAULTS (not
+	 * to the previous saved value). This gives "replace entirely" behaviour as
+	 * the brief requires.
+	 *
+	 * UNWIRED TABS — DEFERRED (Phase 2)
+	 * admin_bar, notifications, and logging sub-arrays are NOT imported — they
+	 * are not yet wired with their own sanitize_X helpers. When those tabs land,
+	 * this method gains matching clauses. Until then, their fields fall back to
+	 * DEFAULTS after update_config().
+	 *
+	 * @param array $json JSON-decoded config array from the uploaded file.
+	 * @return array Sanitized partial config ready for CH_Core::update_config().
+	 */
+	public function sanitize_for_import( array $json ): array {
+		$sanitized = array();
+
+		// Roles tab fields.
+		if ( isset( $json['protected_roles'] ) || isset( $json['admin_roles'] ) ) {
+			$sanitized = array_merge( $sanitized, $this->sanitize_roles( $json ) );
+		}
+
+		// Restrictions tab fields (nested under 'enforcement').
+		if ( isset( $json['enforcement'] ) && is_array( $json['enforcement'] ) ) {
+			$sanitized['enforcement'] = $this->sanitize_restrictions( $json['enforcement'] );
+		}
+
+		// Dashboard tab fields.
+		if ( isset( $json['dashboard'] ) && is_array( $json['dashboard'] ) ) {
+			$sanitized['dashboard'] = $this->sanitize_dashboard( $json['dashboard'] );
+		}
+
+		// Top-level scalar flags.
+		if ( isset( $json['enabled'] ) ) {
+			$sanitized['enabled'] = (bool) $json['enabled'];
+		}
+		if ( isset( $json['setup_completed'] ) ) {
+			$sanitized['setup_completed'] = (bool) $json['setup_completed'];
+		}
+
+		return $sanitized;
 	}
 
 	// -------------------------------------------------------------------------
@@ -753,5 +811,64 @@ class CH_Admin_Settings {
 			$checked ? ' checked' : '',
 			esc_html( __( 'Show WordPress version, SSL status, and pending plugin updates', 'client-handoff' ) )
 		);
+	}
+
+	// -------------------------------------------------------------------------
+	// Export / import UI
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Render the Export / Import Configuration section.
+	 *
+	 * Rendered at the bottom of the tabbed settings page (after the main form,
+	 * inside the .wrap div) whenever the setup flow is NOT active. Because
+	 * render_page() returns early when should_show() is true, this method is
+	 * never called during the setup flow — no additional guard is needed here.
+	 *
+	 * DEFERRED UNIT TEST — Phase 4
+	 * HTML output; follows the renderer-deferral pattern established for field
+	 * renderers in previous passes.
+	 */
+	public function render_export_import_section() {
+		$admin_post_url = admin_url( 'admin-post.php' );
+
+		// Success / error notices from a previous import.
+		if ( ! empty( $_GET['ch_import_success'] ) ) {
+			echo '<div class="notice notice-success is-dismissible"><p>';
+			echo esc_html( __( 'Configuration imported successfully.', 'client-handoff' ) );
+			echo '</p></div>';
+		} elseif ( ! empty( $_GET['ch_import_error'] ) ) {
+			$reason = sanitize_key( $_GET['ch_import_error'] );
+			$msg    = 'parse' === $reason
+				? __( 'Import failed: the file could not be parsed as valid JSON.', 'client-handoff' )
+				: __( 'Import failed: invalid or oversized file upload.', 'client-handoff' );
+			echo '<div class="notice notice-error is-dismissible"><p>';
+			echo esc_html( $msg );
+			echo '</p></div>';
+		}
+		?>
+		<hr>
+		<h2><?php echo esc_html( __( 'Export / Import Configuration', 'client-handoff' ) ); ?></h2>
+		<p><?php echo esc_html( __( 'Export the current configuration as a JSON file, or import a previously exported file. Import overwrites all settings.', 'client-handoff' ) ); ?></p>
+
+		<div style="display:flex;gap:2em;flex-wrap:wrap;align-items:flex-start">
+
+			<!-- Export -->
+			<form method="post" action="<?php echo esc_url( $admin_post_url ); ?>">
+				<input type="hidden" name="action" value="ch_export_config">
+				<?php wp_nonce_field( 'ch_export_config' ); ?>
+				<?php submit_button( __( 'Export Configuration', 'client-handoff' ), 'secondary', 'ch-export-btn', false ); ?>
+			</form>
+
+			<!-- Import -->
+			<form method="post" action="<?php echo esc_url( $admin_post_url ); ?>" enctype="multipart/form-data">
+				<input type="hidden" name="action" value="ch_import_config">
+				<?php wp_nonce_field( 'ch_import_config' ); ?>
+				<input type="file" name="ch_config_file" accept=".json" style="vertical-align:middle">
+				<?php submit_button( __( 'Import Configuration', 'client-handoff' ), 'secondary', 'ch-import-btn', false ); ?>
+			</form>
+
+		</div>
+		<?php
 	}
 }
