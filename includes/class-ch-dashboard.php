@@ -1,7 +1,19 @@
 <?php
 /**
- * Client operational dashboard: replaces the default WP dashboard for
- * protected users with a purpose-built widget (brief § 3.1).
+ * Client operational dashboard.
+ *
+ * @package ClientHandoff
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+/**
+ * Class CH_Dashboard
+ *
+ * Replaces the default WP dashboard for protected users with a purpose-built
+ * widget (brief § 3.1).
  *
  * GATING — three layered checks evaluated in cheapest-first order:
  *
@@ -45,16 +57,6 @@
  * the ecosystem of backup plugins (UpdraftPlus, BackWPup, etc. all expose
  * proprietary data). Deferred until a strategy (filter hook or explicit
  * plugin detection) is agreed.
- *
- * @package ClientHandoff
- */
-
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
-
-/**
- * Class CH_Dashboard
  */
 class CH_Dashboard {
 

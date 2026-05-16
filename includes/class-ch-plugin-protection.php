@@ -172,9 +172,11 @@ class CH_Plugin_Protection {
 			}
 		} else {
 			// action=deactivate-selected or action=delete-selected.
+			// phpcs:disable WordPress.Security.NonceVerification.Recommended -- Intercept fires before WP's own nonce check; we only inspect plugin basenames against protected_plugins.
 			$checked = isset( $_REQUEST['checked'] ) && is_array( $_REQUEST['checked'] )
 				? array_map( 'sanitize_text_field', wp_unslash( $_REQUEST['checked'] ) )
-				: array(); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- See above.
+				: array();
+			// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 			foreach ( $checked as $plugin ) {
 				if ( in_array( (string) $plugin, $protected_plugins, true ) ) {
