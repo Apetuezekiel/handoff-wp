@@ -87,6 +87,10 @@ class CH_Admin_Settings {
 
 	/**
 	 * Register settings group, section, and fields for the Roles tab.
+	 *
+	 * register_setting() is unconditional — the option registration is global,
+	 * not tab-specific. Section and field registrations are tab-gated so that
+	 * each tab only registers its own fields (precedent for future tabs).
 	 */
 	public function register_settings() {
 		register_setting(
@@ -95,28 +99,30 @@ class CH_Admin_Settings {
 			array( 'sanitize_callback' => array( $this, 'sanitize' ) )
 		);
 
-		add_settings_section(
-			'ch_roles_section',
-			__( 'Role Configuration', 'client-handoff' ),
-			null,
-			'client-handoff-roles'
-		);
+		if ( 'roles' === $this->get_active_tab() ) {
+			add_settings_section(
+				'ch_roles_section',
+				__( 'Role Configuration', 'client-handoff' ),
+				null,
+				'client-handoff-roles'
+			);
 
-		add_settings_field(
-			'ch_protected_roles',
-			__( 'Protected Roles', 'client-handoff' ),
-			array( $this, 'render_protected_roles_field' ),
-			'client-handoff-roles',
-			'ch_roles_section'
-		);
+			add_settings_field(
+				'ch_protected_roles',
+				__( 'Protected Roles', 'client-handoff' ),
+				array( $this, 'render_protected_roles_field' ),
+				'client-handoff-roles',
+				'ch_roles_section'
+			);
 
-		add_settings_field(
-			'ch_admin_roles',
-			__( 'Admin Roles', 'client-handoff' ),
-			array( $this, 'render_admin_roles_field' ),
-			'client-handoff-roles',
-			'ch_roles_section'
-		);
+			add_settings_field(
+				'ch_admin_roles',
+				__( 'Admin Roles', 'client-handoff' ),
+				array( $this, 'render_admin_roles_field' ),
+				'client-handoff-roles',
+				'ch_roles_section'
+			);
+		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -142,8 +148,18 @@ class CH_Admin_Settings {
 
 	/**
 	 * Render the full settings page (nav-tab wrapper + active-tab content).
+	 *
+	 * The capability check here is belt-and-braces: add_menu_page() already
+	 * enforces 'manage_options' at the menu registration level, but direct URL
+	 * access warrants an explicit guard. The return after wp_die() is dead code
+	 * in production (wp_die halts) but keeps the method unit-testable.
 	 */
 	public function render_page() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have permission to access this page.', 'client-handoff' ) );
+			return;
+		}
+
 		$active = $this->get_active_tab();
 		?>
 		<div class="wrap">
@@ -233,8 +249,11 @@ class CH_Admin_Settings {
 		$admin_raw     = isset( $input['admin_roles'] ) && is_array( $input['admin_roles'] )
 			? $input['admin_roles'] : array();
 
+		// 'enabled' is intentionally absent from this partial. The Roles tab form
+		// does not render an enabled checkbox; including it here would overlay
+		// false onto the saved flag on every Roles save, silently deactivating
+		// the plugin. The enabled flag is owned by a future dedicated tab.
 		$partial = array(
-			'enabled'         => ! empty( $input['enabled'] ),
 			'protected_roles' => array_values( array_filter(
 				array_map( 'sanitize_key', $protected_raw ),
 				static function ( $slug ) use ( $valid_roles ) {

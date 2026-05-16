@@ -5,17 +5,20 @@
  * WP_Mock limitation: add_action() is an expectation assertion only — the hook
  * pipeline is never fired. All tab and sanitize tests call the methods directly.
  *
- * $_GET isolation: setUp saves and resets $_GET; tearDown restores it.  Each
- * get_active_tab test sets only the key it needs and relies on the clean state
- * from setUp.
+ * $_GET isolation: setUp saves and resets $_GET; tearDown restores it. Each
+ * test sets only the key it needs and relies on the clean state from setUp.
  *
  * Sanitize flow: sanitize() calls wp_roles()->get_names() to build the valid-role
- * allowlist, then calls merge_into_current() which re-reads get_option().  Tests
+ * allowlist, then calls merge_into_current() which re-reads get_option(). Tests
  * use make_core() to set up the get_option mock (allowing multiple calls) and
  * mock wp_roles() explicitly per test.
  *
  * sanitize_key is pre-defined in bootstrap as a PHP userspace function — it does
  * not need WP_Mock mocking in these tests.
+ *
+ * Registration-tracking pattern: WP_Mock::userFunction('fn', ['return' => Closure])
+ * where the closure appends func_get_args() to a reference array. Assertions
+ * inspect the recorded calls — no assertTrue(true) no-ops.
  *
  * @package ClientHandoff
  */
@@ -61,7 +64,7 @@ class AdminSettingsTest extends TestCase {
 	}
 
 	/**
-	 * Standard enabled config with empty role lists — used by sanitize tests.
+	 * Standard base config used by sanitize tests.
 	 *
 	 * @param array $overrides
 	 * @return array
@@ -88,7 +91,188 @@ class AdminSettingsTest extends TestCase {
 	}
 
 	// =========================================================================
-	// Test 1–6: get_active_tab() — tab routing and allowlist enforcement
+	// Tests A–F: register_hooks, register_page, register_settings, render_page
+	// =========================================================================
+
+	/**
+	 * Test A — register_hooks() wires admin_menu and admin_init.
+	 *
+	 * WP_Mock::expectActionAdded() registers an expectation verified by
+	 * WP_Mock::tearDown() (called via parent::tearDown()). PHPUnit would flag
+	 * the test as risky for having no $this->assert*() calls; telling it to
+	 * expect no assertions keeps the test passing while WP_Mock does the real
+	 * verification in tearDown.
+	 */
+	public function test_register_hooks_adds_admin_menu_and_admin_init_actions() {
+		$this->expectNotToPerformAssertions();
+
+		$core     = $this->make_core();
+		$settings = new CH_Admin_Settings( $core );
+
+		WP_Mock::expectActionAdded( 'admin_menu', array( $settings, 'register_page' ) );
+		WP_Mock::expectActionAdded( 'admin_init', array( $settings, 'register_settings' ) );
+
+		$settings->register_hooks();
+	}
+
+	/**
+	 * Test B — register_page() calls add_menu_page() with the required args.
+	 */
+	public function test_register_page_calls_add_menu_page_with_expected_args() {
+		$core     = $this->make_core();
+		$settings = new CH_Admin_Settings( $core );
+
+		$calls = array();
+		WP_Mock::userFunction( 'add_menu_page', array(
+			'return' => static function () use ( &$calls ) {
+				$calls[] = func_get_args();
+			},
+		) );
+
+		$settings->register_page();
+
+		$this->assertCount( 1, $calls, 'add_menu_page must be called exactly once' );
+		$args = $calls[0];
+		// [0]=page_title [1]=menu_title [2]=cap [3]=slug [4]=cb [5]=icon [6]=pos
+		$this->assertSame( 'manage_options',        $args[2], 'capability must be manage_options' );
+		$this->assertSame( 'client-handoff',        $args[3], 'menu slug must be client-handoff' );
+		$this->assertEquals( array( $settings, 'render_page' ), $args[4], 'render callback must be render_page' );
+		$this->assertSame( 'dashicons-businessman', $args[5], 'icon must be dashicons-businessman' );
+		$this->assertSame( 80,                      $args[6], 'position must be 80' );
+	}
+
+	/**
+	 * Test C — register_settings() calls register_setting() with the correct args.
+	 */
+	public function test_register_settings_calls_register_setting_with_correct_args() {
+		$_GET['tab'] = 'roles'; // activate gate so section/field mocks are needed.
+
+		$core     = $this->make_core();
+		$settings = new CH_Admin_Settings( $core );
+
+		$reg_calls = array();
+		WP_Mock::userFunction( 'register_setting', array(
+			'return' => static function () use ( &$reg_calls ) {
+				$reg_calls[] = func_get_args();
+			},
+		) );
+		WP_Mock::userFunction( 'add_settings_section' );
+		WP_Mock::userFunction( 'add_settings_field' );
+
+		$settings->register_settings();
+
+		$this->assertCount( 1, $reg_calls, 'register_setting must be called exactly once' );
+		$this->assertSame( 'client_handoff_config', $reg_calls[0][0], 'option_group must be client_handoff_config' );
+		$this->assertSame( 'client_handoff_config', $reg_calls[0][1], 'option_name must be client_handoff_config' );
+		$this->assertArrayHasKey( 'sanitize_callback', $reg_calls[0][2], 'args must contain sanitize_callback' );
+		$this->assertEquals(
+			array( $settings, 'sanitize' ),
+			$reg_calls[0][2]['sanitize_callback'],
+			'sanitize_callback must be this->sanitize'
+		);
+	}
+
+	/**
+	 * Test D — on the roles tab, section and both fields are registered.
+	 */
+	public function test_register_settings_with_roles_tab_registers_section_and_fields() {
+		$_GET['tab'] = 'roles';
+
+		$core     = $this->make_core();
+		$settings = new CH_Admin_Settings( $core );
+
+		$section_calls = array();
+		$field_calls   = array();
+		WP_Mock::userFunction( 'register_setting' );
+		WP_Mock::userFunction( 'add_settings_section', array(
+			'return' => static function () use ( &$section_calls ) {
+				$section_calls[] = func_get_args();
+			},
+		) );
+		WP_Mock::userFunction( 'add_settings_field', array(
+			'return' => static function () use ( &$field_calls ) {
+				$field_calls[] = func_get_args();
+			},
+		) );
+
+		$settings->register_settings();
+
+		$this->assertCount( 1, $section_calls, 'add_settings_section must be called once on roles tab' );
+		$this->assertSame( 'client-handoff-roles', $section_calls[0][3],
+			'section must be registered to page client-handoff-roles' );
+
+		$this->assertCount( 2, $field_calls, 'add_settings_field must be called twice on roles tab' );
+		foreach ( $field_calls as $i => $field_args ) {
+			$this->assertSame( 'client-handoff-roles', $field_args[3],
+				"field call $i must target page client-handoff-roles" );
+		}
+		// Verify the two field IDs.
+		$field_ids = array_column( $field_calls, 0 );
+		$this->assertContains( 'ch_protected_roles', $field_ids );
+		$this->assertContains( 'ch_admin_roles', $field_ids );
+	}
+
+	/**
+	 * Test E — on a non-roles tab, register_setting fires but section/fields do not.
+	 */
+	public function test_register_settings_with_non_roles_tab_skips_section_and_fields() {
+		$_GET['tab'] = 'dashboard';
+
+		$core     = $this->make_core();
+		$settings = new CH_Admin_Settings( $core );
+
+		$reg_calls     = array();
+		$section_calls = array();
+		$field_calls   = array();
+		WP_Mock::userFunction( 'register_setting', array(
+			'return' => static function () use ( &$reg_calls ) {
+				$reg_calls[] = func_get_args();
+			},
+		) );
+		WP_Mock::userFunction( 'add_settings_section', array(
+			'return' => static function () use ( &$section_calls ) {
+				$section_calls[] = func_get_args();
+			},
+		) );
+		WP_Mock::userFunction( 'add_settings_field', array(
+			'return' => static function () use ( &$field_calls ) {
+				$field_calls[] = func_get_args();
+			},
+		) );
+
+		$settings->register_settings();
+
+		$this->assertCount( 1, $reg_calls, 'register_setting must fire regardless of active tab' );
+		$this->assertEmpty( $section_calls, 'add_settings_section must not fire on non-roles tab' );
+		$this->assertEmpty( $field_calls,   'add_settings_field must not fire on non-roles tab' );
+	}
+
+	/**
+	 * Test F — render_page() wp_dies when user lacks manage_options.
+	 */
+	public function test_render_page_wp_dies_when_user_lacks_manage_options() {
+		$core     = $this->make_core();
+		$settings = new CH_Admin_Settings( $core );
+
+		WP_Mock::userFunction( 'current_user_can', array(
+			'args'   => array( 'manage_options' ),
+			'return' => false,
+		) );
+
+		$wp_die_called = false;
+		WP_Mock::userFunction( 'wp_die', array(
+			'return' => static function () use ( &$wp_die_called ) {
+				$wp_die_called = true;
+			},
+		) );
+
+		$settings->render_page();
+
+		$this->assertTrue( $wp_die_called, 'wp_die must be called when user lacks manage_options' );
+	}
+
+	// =========================================================================
+	// Tests 1–5: get_active_tab() — tab routing and allowlist enforcement
 	// =========================================================================
 
 	/**
@@ -152,7 +336,7 @@ class AdminSettingsTest extends TestCase {
 	}
 
 	// =========================================================================
-	// Test 7–11: sanitize() — role validation and enabled flag
+	// Tests 6–10: sanitize() — role validation and enabled-preservation
 	// =========================================================================
 
 	/**
@@ -168,7 +352,6 @@ class AdminSettingsTest extends TestCase {
 		) );
 
 		$result = $settings->sanitize( array(
-			'enabled'         => '1',
 			'protected_roles' => array( 'subscriber', 'editor' ),
 			'admin_roles'     => array(),
 		) );
@@ -188,7 +371,6 @@ class AdminSettingsTest extends TestCase {
 		) );
 
 		$result = $settings->sanitize( array(
-			'enabled'         => false,
 			'protected_roles' => array( 'subscriber', 'nonexistent_role' ),
 			'admin_roles'     => array(),
 		) );
@@ -209,7 +391,6 @@ class AdminSettingsTest extends TestCase {
 		) );
 
 		$result = $settings->sanitize( array(
-			'enabled'         => false,
 			'protected_roles' => array(),
 			'admin_roles'     => array( 'editor' ),
 		) );
@@ -229,7 +410,6 @@ class AdminSettingsTest extends TestCase {
 		) );
 
 		$result = $settings->sanitize( array(
-			'enabled'         => false,
 			'protected_roles' => array(),
 			'admin_roles'     => array( 'editor', 'fake_admin_role' ),
 		) );
@@ -239,38 +419,50 @@ class AdminSettingsTest extends TestCase {
 	}
 
 	/**
-	 * A truthy 'enabled' value in input sets enabled=true in the merged config.
+	 * The Roles-tab sanitize pass must NOT alter the saved enabled flag.
+	 *
+	 * The Roles form has no enabled checkbox. If sanitize() included 'enabled'
+	 * in its partial, merge_into_current() would overlay false on every save.
+	 * Two sub-assertions cover both directions to catch any regression.
+	 *
+	 * get_option is mocked with a closure that routes by call count so that both
+	 * sub-cases share a single mock without WP_Mock expectation-stacking problems.
+	 * Each sub-case makes exactly 2 calls to get_option: one in CH_Core::__construct
+	 * (load_config) and one inside merge_into_current. floor(call/2) routes pairs.
 	 */
-	public function test_sanitize_sets_enabled_true_from_input() {
-		$core     = $this->make_core( $this->base_config() );
-		$settings = new CH_Admin_Settings( $core );
-
-		$this->mock_wp_roles( array() );
-
-		$result = $settings->sanitize( array(
-			'enabled'         => '1', // checkbox value when checked.
-			'protected_roles' => array(),
-			'admin_roles'     => array(),
+	public function test_sanitize_preserves_saved_enabled_through_roles_tab_save() {
+		$call_count = 0;
+		$configs    = array(
+			array( 'enabled' => true ),  // sub-case 1: both calls return enabled=true.
+			array( 'enabled' => false ), // sub-case 2: both calls return enabled=false.
+		);
+		WP_Mock::userFunction( 'get_option', array(
+			'return' => static function () use ( &$call_count, $configs ) {
+				$pair = (int) floor( $call_count / 2 );
+				++$call_count;
+				return isset( $configs[ $pair ] ) ? $configs[ $pair ] : array();
+			},
 		) );
 
-		$this->assertTrue( $result['enabled'] );
-	}
+		// Sub-case 1: saved enabled=true must survive a Roles-tab save (calls 0–1).
+		$core1    = CH_Core::get_instance();
+		$settings = new CH_Admin_Settings( $core1 );
+		WP_Mock::userFunction( 'wp_roles', array( 'return' => new WP_Roles( array() ) ) );
+		$result1 = $settings->sanitize( array( 'protected_roles' => array(), 'admin_roles' => array() ) );
+		$this->assertTrue(
+			$result1['enabled'],
+			'saved enabled=true must not be overwritten by a Roles-tab sanitize pass'
+		);
 
-	/**
-	 * When 'enabled' is absent (unchecked checkbox), enabled=false is returned.
-	 */
-	public function test_sanitize_enabled_defaults_to_false_when_key_absent() {
-		$core     = $this->make_core( $this->base_config() );
-		$settings = new CH_Admin_Settings( $core );
-
-		$this->mock_wp_roles( array() );
-
-		$result = $settings->sanitize( array(
-			// 'enabled' intentionally absent — unchecked checkboxes are not submitted.
-			'protected_roles' => array(),
-			'admin_roles'     => array(),
-		) );
-
-		$this->assertFalse( $result['enabled'] );
+		// Sub-case 2: saved enabled=false must also survive (calls 2–3).
+		CH_Core::reset_instance();
+		$core2    = CH_Core::get_instance();
+		$settings = new CH_Admin_Settings( $core2 );
+		WP_Mock::userFunction( 'wp_roles', array( 'return' => new WP_Roles( array() ) ) );
+		$result2 = $settings->sanitize( array( 'protected_roles' => array(), 'admin_roles' => array() ) );
+		$this->assertFalse(
+			$result2['enabled'],
+			'saved enabled=false must not be overwritten by a Roles-tab sanitize pass'
+		);
 	}
 }
