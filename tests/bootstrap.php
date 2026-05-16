@@ -133,3 +133,4 @@ if ( ! class_exists( 'WP_Screen' ) ) {
 require_once dirname( __DIR__ ) . '/includes/class-ch-core.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-enforcer.php';
 require_once dirname( __DIR__ ) . '/includes/class-ch-plugin-protection.php';
+require_once dirname( __DIR__ ) . '/includes/class-ch-menu-manager.php';
