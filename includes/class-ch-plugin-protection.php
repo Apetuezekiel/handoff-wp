@@ -235,7 +235,7 @@ class CH_Plugin_Protection {
 		}
 
 		wp_die(
-			$message,
+			wp_kses_post( $message ),
 			esc_html( __( 'Access Restricted', 'client-handoff' ) ),
 			array( 'response' => 403 )
 		);

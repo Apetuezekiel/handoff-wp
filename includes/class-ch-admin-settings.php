@@ -812,7 +812,7 @@ class CH_Admin_Settings {
 					<td><input type="text" name="%1$s[dashboard][quick_links][%2$d][icon]"  value="%5$s" class="regular-text" placeholder="dashicons-admin-generic"></td>
 				</tr>',
 				esc_attr( CH_Core::OPTION_CONFIG ),
-				$i,
+				(int) $i,
 				esc_attr( $label ),
 				esc_attr( $url ),
 				esc_attr( $icon )
