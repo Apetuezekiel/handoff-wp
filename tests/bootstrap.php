@@ -49,6 +49,43 @@ if ( ! function_exists( 'sanitize_text_field' ) ) {
 		return trim( strip_tags( (string) $str ) );
 	}
 }
+if ( ! function_exists( 'sanitize_email' ) ) {
+	/**
+	 * Stub for sanitize_email: identity passthrough.
+	 * Real WP rejects malformed addresses and returns ''; the unit layer only
+	 * verifies the function is invoked (the call itself is what matters here).
+	 */
+	function sanitize_email( $email ) {
+		return (string) $email;
+	}
+}
+if ( ! function_exists( 'esc_url_raw' ) ) {
+	/**
+	 * Stub for esc_url_raw: identity passthrough.
+	 * Real WP strips dangerous protocols; the unit layer tests invocation, not
+	 * URL-protocol filtering (an integration concern).
+	 */
+	function esc_url_raw( $url ) {
+		return (string) $url;
+	}
+}
+if ( ! function_exists( 'sanitize_html_class' ) ) {
+	/**
+	 * Stub for sanitize_html_class: identity passthrough.
+	 * Real WP strips characters invalid in HTML class attributes.
+	 */
+	function sanitize_html_class( $class ) {
+		return (string) $class;
+	}
+}
+if ( ! function_exists( 'esc_textarea' ) ) {
+	/**
+	 * Stub for esc_textarea: escapes for use in a textarea value.
+	 */
+	function esc_textarea( $text ) {
+		return htmlspecialchars( (string) $text, ENT_QUOTES, 'UTF-8' );
+	}
+}
 if ( ! function_exists( 'wp_kses_post' ) ) {
 	/**
 	 * Stub for wp_kses_post: strips tags not in the allowed set.

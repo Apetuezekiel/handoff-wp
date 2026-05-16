@@ -147,6 +147,55 @@ class CH_Admin_Settings {
 				'ch_restrictions_section'
 			);
 		}
+
+		if ( 'dashboard' === $this->get_active_tab() ) {
+			add_settings_section(
+				'ch_dashboard_section',
+				__( 'Client Dashboard', 'client-handoff' ),
+				null,
+				'client-handoff-dashboard'
+			);
+
+			add_settings_field(
+				'ch_dashboard_enabled',
+				__( 'Enable Dashboard', 'client-handoff' ),
+				array( $this, 'render_dashboard_enabled_field' ),
+				'client-handoff-dashboard',
+				'ch_dashboard_section'
+			);
+
+			add_settings_field(
+				'ch_welcome_message',
+				__( 'Welcome Message', 'client-handoff' ),
+				array( $this, 'render_welcome_message_field' ),
+				'client-handoff-dashboard',
+				'ch_dashboard_section'
+			);
+
+			add_settings_field(
+				'ch_quick_links',
+				__( 'Quick Links', 'client-handoff' ),
+				array( $this, 'render_quick_links_field' ),
+				'client-handoff-dashboard',
+				'ch_dashboard_section'
+			);
+
+			add_settings_field(
+				'ch_developer_contact',
+				__( 'Developer Contact', 'client-handoff' ),
+				array( $this, 'render_developer_contact_field' ),
+				'client-handoff-dashboard',
+				'ch_dashboard_section'
+			);
+
+			add_settings_field(
+				'ch_show_site_status',
+				__( 'Show Site Status', 'client-handoff' ),
+				array( $this, 'render_show_site_status_field' ),
+				'client-handoff-dashboard',
+				'ch_dashboard_section'
+			);
+		}
 	}
 
 	// -------------------------------------------------------------------------
@@ -206,6 +255,10 @@ class CH_Admin_Settings {
 				} elseif ( 'restrictions' === $active ) {
 					settings_fields( CH_Core::OPTION_CONFIG );
 					do_settings_sections( 'client-handoff-restrictions' );
+					submit_button();
+				} elseif ( 'dashboard' === $active ) {
+					settings_fields( CH_Core::OPTION_CONFIG );
+					do_settings_sections( 'client-handoff-dashboard' );
 					submit_button();
 				} else {
 					echo '<p>' . esc_html( __( 'This tab is coming soon.', 'client-handoff' ) ) . '</p>';
@@ -340,6 +393,11 @@ class CH_Admin_Settings {
 			$partial['enforcement'] = $this->sanitize_restrictions( $input['enforcement'] );
 		}
 
+		// Dashboard tab fields.
+		if ( isset( $input['dashboard'] ) && is_array( $input['dashboard'] ) ) {
+			$partial['dashboard'] = $this->sanitize_dashboard( $input['dashboard'] );
+		}
+
 		return $this->core->merge_into_current( $partial );
 	}
 
@@ -434,6 +492,219 @@ class CH_Admin_Settings {
 		return array(
 			'blocked_caps'      => $blocked_caps,
 			'protected_plugins' => $protected_plugins,
+		);
+	}
+
+	/**
+	 * Sanitize Dashboard-tab fields.
+	 *
+	 * Returns the full 'dashboard' sub-array without any outer wrapper —
+	 * sanitize() assigns it to $partial['dashboard'] directly.
+	 *
+	 * ENABLED / SHOW_SITE_STATUS
+	 * Both are checkbox booleans. Unchecked checkboxes are absent from the
+	 * POST — ! empty() correctly maps presence to true and absence to false.
+	 *
+	 * WELCOME_MESSAGE
+	 * wp_kses_post() is used deliberately instead of sanitize_text_field().
+	 * The field is intended to hold basic HTML (headings, links, emphasis).
+	 * sanitize_text_field() strips all tags, which would destroy that HTML.
+	 *
+	 * QUICK_LINKS — FIXED-SLOT REPEATER
+	 * The form exposes five fixed rows. On save, rows where BOTH label AND
+	 * url are empty strings are dropped. Rows where only one of label/url is
+	 * set are kept — the developer controls which fields matter. Order is
+	 * preserved from the row index. Dynamic add/remove is post-MVP: the
+	 * fixed-slot model is simpler to implement without JavaScript and
+	 * sufficient for the five typical quick actions a client dashboard needs.
+	 *
+	 * DEVELOPER_CONTACT
+	 * sanitize_email() rejects malformed email addresses by returning ''.
+	 * esc_url_raw() is used (not esc_url) because esc_url adds additional
+	 * HTML-encoding unsuitable for database storage.
+	 * All three keys are always returned (empty-string default) so the saved
+	 * shape never has missing keys.
+	 *
+	 * @param array $dashboard_input Raw dashboard sub-array from form input.
+	 * @return array Sanitized dashboard sub-array (no outer 'dashboard' key).
+	 */
+	private function sanitize_dashboard( array $dashboard_input ): array {
+		// ---- enabled ------------------------------------------------------------
+		$enabled = ! empty( $dashboard_input['enabled'] );
+
+		// ---- welcome_message ----------------------------------------------------
+		$welcome_raw     = isset( $dashboard_input['welcome_message'] )
+			? (string) $dashboard_input['welcome_message'] : '';
+		$welcome_message = wp_kses_post( $welcome_raw );
+
+		// ---- quick_links --------------------------------------------------------
+		$links_raw  = isset( $dashboard_input['quick_links'] ) && is_array( $dashboard_input['quick_links'] )
+			? $dashboard_input['quick_links'] : array();
+		$quick_links = array();
+
+		foreach ( $links_raw as $row ) {
+			$label = sanitize_text_field( isset( $row['label'] ) ? (string) $row['label'] : '' );
+			$url   = esc_url_raw( isset( $row['url'] )   ? (string) $row['url']   : '' );
+			$icon  = sanitize_html_class( isset( $row['icon'] )  ? (string) $row['icon']  : '' );
+
+			// Drop rows where both label and url are empty; icon alone is not
+			// enough to constitute an actionable quick link.
+			if ( '' === $label && '' === $url ) {
+				continue;
+			}
+
+			$quick_links[] = array(
+				'label' => $label,
+				'url'   => $url,
+				'icon'  => $icon,
+			);
+		}
+
+		$quick_links = array_values( $quick_links );
+
+		// ---- developer_contact --------------------------------------------------
+		$contact_raw = isset( $dashboard_input['developer_contact'] ) && is_array( $dashboard_input['developer_contact'] )
+			? $dashboard_input['developer_contact'] : array();
+
+		$developer_contact = array(
+			'name'  => sanitize_text_field( isset( $contact_raw['name'] )  ? (string) $contact_raw['name']  : '' ),
+			'email' => sanitize_email(      isset( $contact_raw['email'] ) ? (string) $contact_raw['email'] : '' ),
+			'url'   => esc_url_raw(         isset( $contact_raw['url'] )   ? (string) $contact_raw['url']   : '' ),
+		);
+
+		// ---- show_site_status ---------------------------------------------------
+		$show_site_status = ! empty( $dashboard_input['show_site_status'] );
+
+		return array(
+			'enabled'           => $enabled,
+			'welcome_message'   => $welcome_message,
+			'quick_links'       => $quick_links,
+			'developer_contact' => $developer_contact,
+			'show_site_status'  => $show_site_status,
+		);
+	}
+
+	// -------------------------------------------------------------------------
+	// Dashboard tab field renderers
+	// -------------------------------------------------------------------------
+
+	/**
+	 * Render the dashboard.enabled checkbox.
+	 */
+	public function render_dashboard_enabled_field() {
+		$dashboard = $this->core->get( 'dashboard' );
+		$checked   = ! empty( $dashboard['enabled'] );
+		printf(
+			'<label><input type="checkbox" name="%s[dashboard][enabled]" value="1"%s> %s</label>',
+			esc_attr( CH_Core::OPTION_CONFIG ),
+			$checked ? ' checked' : '',
+			esc_html( __( 'Replace the WordPress dashboard with the client dashboard widget', 'client-handoff' ) )
+		);
+	}
+
+	/**
+	 * Render the dashboard.welcome_message textarea.
+	 *
+	 * Basic HTML is intentional — the textarea is rendered as-is; the user
+	 * composes HTML and the sanitize callback applies wp_kses_post on save.
+	 */
+	public function render_welcome_message_field() {
+		$dashboard = $this->core->get( 'dashboard' );
+		$value     = isset( $dashboard['welcome_message'] ) ? $dashboard['welcome_message'] : '';
+		printf(
+			'<textarea name="%s[dashboard][welcome_message]" rows="5" cols="50">%s</textarea>
+			<p class="description">%s</p>',
+			esc_attr( CH_Core::OPTION_CONFIG ),
+			esc_textarea( $value ),
+			esc_html( __( 'Basic HTML allowed (paragraphs, links, emphasis).', 'client-handoff' ) )
+		);
+	}
+
+	/**
+	 * Render five fixed-slot rows for dashboard.quick_links.
+	 *
+	 * Fixed-slot repeater (five rows) — dynamic add/remove is post-MVP.
+	 * Each row has label, URL, and icon (Dashicons class) inputs. Saved values
+	 * populate rows in order; remaining rows show empty inputs.
+	 */
+	public function render_quick_links_field() {
+		$dashboard   = $this->core->get( 'dashboard' );
+		$saved_links = isset( $dashboard['quick_links'] ) && is_array( $dashboard['quick_links'] )
+			? $dashboard['quick_links'] : array();
+
+		echo '<table class="widefat" style="max-width:600px">';
+		echo '<thead><tr>';
+		echo '<th>' . esc_html( __( 'Label', 'client-handoff' ) ) . '</th>';
+		echo '<th>' . esc_html( __( 'URL', 'client-handoff' ) ) . '</th>';
+		echo '<th>' . esc_html( __( 'Icon (Dashicons class)', 'client-handoff' ) ) . '</th>';
+		echo '</tr></thead><tbody>';
+
+		for ( $i = 0; $i < 5; $i++ ) {
+			$row   = isset( $saved_links[ $i ] ) ? $saved_links[ $i ] : array();
+			$label = isset( $row['label'] ) ? $row['label'] : '';
+			$url   = isset( $row['url'] )   ? $row['url']   : '';
+			$icon  = isset( $row['icon'] )  ? $row['icon']  : '';
+			printf(
+				'<tr>
+					<td><input type="text" name="%1$s[dashboard][quick_links][%2$d][label]" value="%3$s" class="regular-text"></td>
+					<td><input type="text" name="%1$s[dashboard][quick_links][%2$d][url]"   value="%4$s" class="regular-text"></td>
+					<td><input type="text" name="%1$s[dashboard][quick_links][%2$d][icon]"  value="%5$s" class="regular-text" placeholder="dashicons-admin-generic"></td>
+				</tr>',
+				esc_attr( CH_Core::OPTION_CONFIG ),
+				$i,
+				esc_attr( $label ),
+				esc_attr( $url ),
+				esc_attr( $icon )
+			);
+		}
+
+		echo '</tbody></table>';
+		echo '<p class="description">' . esc_html( __( 'Leave label and URL blank to omit a row. Dynamic add/remove is post-MVP.', 'client-handoff' ) ) . '</p>';
+	}
+
+	/**
+	 * Render the dashboard.developer_contact group of three text inputs.
+	 */
+	public function render_developer_contact_field() {
+		$dashboard = $this->core->get( 'dashboard' );
+		$contact   = isset( $dashboard['developer_contact'] ) && is_array( $dashboard['developer_contact'] )
+			? $dashboard['developer_contact'] : array();
+
+		$name  = isset( $contact['name'] )  ? $contact['name']  : '';
+		$email = isset( $contact['email'] ) ? $contact['email'] : '';
+		$url   = isset( $contact['url'] )   ? $contact['url']   : '';
+
+		printf(
+			'<p><label>%s<br><input type="text"  name="%s[dashboard][developer_contact][name]"  value="%s" class="regular-text"></label></p>',
+			esc_html( __( 'Name', 'client-handoff' ) ),
+			esc_attr( CH_Core::OPTION_CONFIG ),
+			esc_attr( $name )
+		);
+		printf(
+			'<p><label>%s<br><input type="email" name="%s[dashboard][developer_contact][email]" value="%s" class="regular-text"></label></p>',
+			esc_html( __( 'Email', 'client-handoff' ) ),
+			esc_attr( CH_Core::OPTION_CONFIG ),
+			esc_attr( $email )
+		);
+		printf(
+			'<p><label>%s<br><input type="url"   name="%s[dashboard][developer_contact][url]"   value="%s" class="regular-text"></label></p>',
+			esc_html( __( 'Website URL', 'client-handoff' ) ),
+			esc_attr( CH_Core::OPTION_CONFIG ),
+			esc_attr( $url )
+		);
+	}
+
+	/**
+	 * Render the dashboard.show_site_status checkbox.
+	 */
+	public function render_show_site_status_field() {
+		$dashboard = $this->core->get( 'dashboard' );
+		$checked   = ! empty( $dashboard['show_site_status'] );
+		printf(
+			'<label><input type="checkbox" name="%s[dashboard][show_site_status]" value="1"%s> %s</label>',
+			esc_attr( CH_Core::OPTION_CONFIG ),
+			$checked ? ' checked' : '',
+			esc_html( __( 'Show WordPress version, SSL status, and pending plugin updates', 'client-handoff' ) )
 		);
 	}
 }
