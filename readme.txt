@@ -1,6 +1,5 @@
 === Client Handoff ===
-Contributors: TODO_WPORG_USERNAME
-; TODO: Replace TODO_WPORG_USERNAME above with the actual wordpress.org username before submission.
+Contributors: ezekielapetu
 Tags: client handoff, client dashboard, simplified admin, agency tools, developer tools
 Requires at least: 6.0
 Tested up to: 6.7
