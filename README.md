@@ -97,16 +97,20 @@ client-handoff.php          Plugin entry — requires, constants, lifecycle hook
 │   ├── class-ch-enforcer.php           Enforcement: cap filter + screen guard
 │   ├── class-ch-plugin-protection.php  Enforcement: action-link removal + intercept
 │   ├── class-ch-menu-manager.php       Cosmetic: admin menu hiding
-│   └── class-ch-admin-bar.php          Cosmetic: admin bar simplification
+│   ├── class-ch-admin-bar.php          Cosmetic: admin bar simplification
+│   ├── class-ch-notifications.php      Cosmetic: nag/notice suppression
+│   └── class-ch-admin-settings.php     UI: top-level page, nav-tab framework, Roles tab
 │
 └── tests/
     ├── bootstrap.php                   WP_Mock bootstrap + WordPress class stubs
     └── Unit/
-        ├── CoreTest.php                24 tests
+        ├── CoreTest.php                28 tests
         ├── EnforcerTest.php            15 tests
         ├── PluginProtectionTest.php    17 tests
         ├── MenuManagerTest.php         9 tests
-        └── AdminBarTest.php            7 tests
+        ├── AdminBarTest.php            7 tests
+        ├── NotificationsTest.php       7 tests
+        └── AdminSettingsTest.php       11 tests
 ```
 
 ### Key design constraints
@@ -135,7 +139,7 @@ With testdox output:
 ./vendor/bin/phpunit --testdox
 ```
 
-**72 tests, 141 assertions.**
+**94 tests, 191 assertions.**
 
 Tests use [WP_Mock](https://github.com/10up/wp_mock) and run without a WordPress install. The bootstrap pre-defines identity stubs for translation and escaping functions before `WP_Mock::bootstrap()` to prevent PHP 8.5 `TypeError` from typed stubs.
 
