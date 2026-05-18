@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/Apetuezekiel/handoff-wp/actions/workflows/ci.yml/badge.svg)
 
-A WordPress plugin for structured developer-to-client handoff. Locks down the admin for non-technical clients without locking out the developer — enforced role-based restrictions, cosmetic simplification, and a clean operational dashboard.
+Zicstack Client Handoff is a WordPress plugin by Zicstack for structured developer-to-client handoff. It locks down the admin for non-technical clients without locking out the developer — enforced role-based restrictions, cosmetic simplification, and a clean operational dashboard.
 
 ## What it does
 
@@ -141,7 +141,7 @@ With testdox output:
 ./vendor/bin/phpunit --testdox
 ```
 
-**94 tests, 191 assertions.**
+**175 tests, 466 assertions.**
 
 Tests use [WP_Mock](https://github.com/10up/wp_mock) and run without a WordPress install. The bootstrap pre-defines identity stubs for translation and escaping functions before `WP_Mock::bootstrap()` to prevent PHP 8.5 `TypeError` from typed stubs.
 
