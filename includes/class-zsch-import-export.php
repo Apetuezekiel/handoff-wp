@@ -4,7 +4,7 @@
  *
  * SEMANTICS — OVERWRITE, NOT MERGE
  *
- * Import uses CH_Core::update_config, which merges the incoming array against
+ * Import uses ZSCH_Core::update_config, which merges the incoming array against
  * DEFAULTS and persists the result. Fields absent from the imported JSON fall
  * back to DEFAULTS, not to the previous saved value. This is the brief's
  * intended behaviour: importing from site A to site B replaces B's config
@@ -30,10 +30,10 @@
  * with the renderer/handler deferral policy established in previous passes.
  *
  * render_export_import_section: HTML output; follows the same renderer-
- * deferral pattern as CH_Admin_Settings field renderers (Phase 4).
+ * deferral pattern as ZSCH_Admin_Settings field renderers (Phase 4).
  *
  * All six pure-logic tests (E1–E6) target sanitize_for_import on
- * CH_Admin_Settings and live in ImportExportTest.php.
+ * ZSCH_Admin_Settings and live in ImportExportTest.php.
  *
  * @package ClientHandoff
  */
@@ -43,19 +43,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class CH_Import_Export
+ * Class ZSCH_Import_Export
  */
-class CH_Import_Export {
+class ZSCH_Import_Export {
 
-	/** @var CH_Core */
+	/** @var ZSCH_Core */
 	private $core;
 
-	/** @var CH_Admin_Settings */
+	/** @var ZSCH_Admin_Settings */
 	private $settings;
 
 	/**
-	 * @param CH_Core           $core
-	 * @param CH_Admin_Settings $settings
+	 * @param ZSCH_Core           $core
+	 * @param ZSCH_Admin_Settings $settings
 	 */
 	public function __construct( $core, $settings ) {
 		$this->core     = $core;
@@ -66,8 +66,8 @@ class CH_Import_Export {
 	 * Register admin-post.php hooks.
 	 */
 	public function register_hooks() {
-		add_action( 'admin_post_ch_export_config', array( $this, 'handle_export' ) );
-		add_action( 'admin_post_ch_import_config', array( $this, 'handle_import' ) );
+		add_action( 'admin_post_zsch_export_config', array( $this, 'handle_export' ) );
+		add_action( 'admin_post_zsch_import_config', array( $this, 'handle_import' ) );
 	}
 
 	// -------------------------------------------------------------------------
@@ -82,15 +82,15 @@ class CH_Import_Export {
 	 * calls exit. Requires an integration harness to test.
 	 */
 	public function handle_export() {
-		check_admin_referer( 'ch_export_config' );
+		check_admin_referer( 'zsch_export_config' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You do not have permission to perform this action.', 'client-handoff' ) );
+			wp_die( esc_html__( 'You do not have permission to perform this action.', 'zicstack-client-handoff' ) );
 		}
 
 		$config   = $this->core->get_config();
 		$json     = json_encode( $config, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES );
-		$filename = 'client-handoff-config-' . gmdate( 'Y-m-d' ) . '.json';
+		$filename = 'zicstack-client-handoff-config-' . gmdate( 'Y-m-d' ) . '.json';
 
 		header( 'Content-Type: application/json' );
 		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
@@ -110,16 +110,16 @@ class CH_Import_Export {
 	 * Involves $_FILES, check_admin_referer, wp_safe_redirect, and exit.
 	 */
 	public function handle_import() {
-		check_admin_referer( 'ch_import_config' );
+		check_admin_referer( 'zsch_import_config' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You do not have permission to perform this action.', 'client-handoff' ) );
+			wp_die( esc_html__( 'You do not have permission to perform this action.', 'zicstack-client-handoff' ) );
 		}
 
-		$settings_url = admin_url( 'admin.php?page=client-handoff' );
+		$settings_url = admin_url( 'admin.php?page=zicstack-client-handoff' );
 
 		// ---- File validation ----------------------------------------------------
-		$file = isset( $_FILES['ch_config_file'] ) ? $_FILES['ch_config_file'] : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is server-side upload metadata; individual field access is structurally bounded.
+		$file = isset( $_FILES['zsch_config_file'] ) ? $_FILES['zsch_config_file'] : null; // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized -- $_FILES is server-side upload metadata; individual field access is structurally bounded.
 
 		if (
 			null === $file ||
@@ -129,7 +129,7 @@ class CH_Import_Export {
 			! is_uploaded_file( $file['tmp_name'] ) ||
 			(int) $file['size'] >= 1024 * 1024
 		) {
-			wp_safe_redirect( add_query_arg( 'ch_import_error', 'upload', $settings_url ) );
+			wp_safe_redirect( add_query_arg( 'zsch_import_error', 'upload', $settings_url ) );
 			exit;
 		}
 
@@ -138,7 +138,7 @@ class CH_Import_Export {
 		$json     = json_decode( $contents, true ); // strict array — never unserialize
 
 		if ( JSON_ERROR_NONE !== json_last_error() || ! is_array( $json ) ) {
-			wp_safe_redirect( add_query_arg( 'ch_import_error', 'parse', $settings_url ) );
+			wp_safe_redirect( add_query_arg( 'zsch_import_error', 'parse', $settings_url ) );
 			exit;
 		}
 
@@ -146,7 +146,7 @@ class CH_Import_Export {
 		$sanitized = $this->settings->sanitize_for_import( $json );
 		$this->core->update_config( $sanitized ); // OVERWRITE — not merge_into_current
 
-		wp_safe_redirect( add_query_arg( 'ch_import_success', '1', $settings_url ) );
+		wp_safe_redirect( add_query_arg( 'zsch_import_success', '1', $settings_url ) );
 		exit;
 	}
 }

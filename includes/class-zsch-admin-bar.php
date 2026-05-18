@@ -6,13 +6,13 @@
  * layer described in brief § 3.4. It fires after WordPress has fully populated
  * the admin bar and removes every node not in the keep set.
  *
- * GATING ASYMMETRY WITH CH_Menu_Manager
+ * GATING ASYMMETRY WITH ZSCH_Menu_Manager
  *
- * CH_Menu_Manager uses its own per-role hidden_menus map and does NOT gate on
+ * ZSCH_Menu_Manager uses its own per-role hidden_menus map and does NOT gate on
  * protected_roles — any role whose slug appears as a key in hidden_menus gets
  * menus hidden regardless of protected_roles.
  *
- * CH_Admin_Bar has no per-role mapping. Simplification is a single global
+ * ZSCH_Admin_Bar has no per-role mapping. Simplification is a single global
  * on/off (admin_bar.simplify) applied to all protected users. Because there is
  * no per-role key to drive removal, the gate MUST consult protected_roles to
  * determine whether the current user is a candidate for simplification.
@@ -43,9 +43,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class CH_Admin_Bar
+ * Class ZSCH_Admin_Bar
  */
-class CH_Admin_Bar {
+class ZSCH_Admin_Bar {
 
 	/**
 	 * Default set of node IDs that survive simplification.
@@ -58,11 +58,11 @@ class CH_Admin_Bar {
 	 */
 	const DEFAULT_KEEP_NODES = array( 'site-name', 'edit', 'my-account' );
 
-	/** @var CH_Core */
+	/** @var ZSCH_Core */
 	private $core;
 
 	/**
-	 * @param CH_Core $core
+	 * @param ZSCH_Core $core
 	 */
 	public function __construct( $core ) {
 		$this->core = $core;

@@ -3,7 +3,7 @@
  * PHPUnit bootstrap — loads WP_Mock and minimal WordPress class stubs.
  *
  * This file must NOT load WordPress. It provides only the class shells that
- * CH_Core actually touches (WP_User, WP_Role, WP_Roles) so unit tests can
+ * ZSCH_Core actually touches (WP_User, WP_Role, WP_Roles) so unit tests can
  * run without a WordPress install.
  */
 
@@ -176,11 +176,11 @@ if ( ! function_exists( 'wp_strip_all_tags' ) ) {
 WP_Mock::bootstrap();
 
 // ---- Minimal WordPress class stubs -----------------------------------------
-// Only the properties/methods accessed by CH_Core are stubbed.
+// Only the properties/methods accessed by ZSCH_Core are stubbed.
 
 if ( ! class_exists( 'WP_User' ) ) {
 	/**
-	 * Stub for WP_User — exposes only the properties CH_Core reads.
+	 * Stub for WP_User — exposes only the properties ZSCH_Core reads.
 	 */
 	class WP_User {
 		/** @var int */
@@ -202,7 +202,7 @@ if ( ! class_exists( 'WP_User' ) ) {
 
 if ( ! class_exists( 'WP_Role' ) ) {
 	/**
-	 * Stub for WP_Role — exposes only the capabilities map CH_Core reads.
+	 * Stub for WP_Role — exposes only the capabilities map ZSCH_Core reads.
 	 */
 	class WP_Role {
 		/** @var array<string, bool> */
@@ -219,7 +219,7 @@ if ( ! class_exists( 'WP_Role' ) ) {
 
 if ( ! class_exists( 'WP_Roles' ) ) {
 	/**
-	 * Stub for WP_Roles — exposes only get_role(), which CH_Core calls in
+	 * Stub for WP_Roles — exposes only get_role(), which ZSCH_Core calls in
 	 * user_has_cap_unfiltered().
 	 */
 	class WP_Roles {
@@ -311,13 +311,13 @@ if ( ! class_exists( 'WP_Admin_Bar' ) ) {
 }
 
 // ---- Classes under test -----------------------------------------------------
-require_once dirname( __DIR__ ) . '/includes/class-ch-core.php';
-require_once dirname( __DIR__ ) . '/includes/class-ch-enforcer.php';
-require_once dirname( __DIR__ ) . '/includes/class-ch-plugin-protection.php';
-require_once dirname( __DIR__ ) . '/includes/class-ch-menu-manager.php';
-require_once dirname( __DIR__ ) . '/includes/class-ch-admin-bar.php';
-require_once dirname( __DIR__ ) . '/includes/class-ch-notifications.php';
-require_once dirname( __DIR__ ) . '/includes/class-ch-admin-settings.php';
-require_once dirname( __DIR__ ) . '/includes/class-ch-setup-flow.php';
-require_once dirname( __DIR__ ) . '/includes/class-ch-import-export.php';
-require_once dirname( __DIR__ ) . '/includes/class-ch-dashboard.php';
+require_once dirname( __DIR__ ) . '/includes/class-zsch-core.php';
+require_once dirname( __DIR__ ) . '/includes/class-zsch-enforcer.php';
+require_once dirname( __DIR__ ) . '/includes/class-zsch-plugin-protection.php';
+require_once dirname( __DIR__ ) . '/includes/class-zsch-menu-manager.php';
+require_once dirname( __DIR__ ) . '/includes/class-zsch-admin-bar.php';
+require_once dirname( __DIR__ ) . '/includes/class-zsch-notifications.php';
+require_once dirname( __DIR__ ) . '/includes/class-zsch-admin-settings.php';
+require_once dirname( __DIR__ ) . '/includes/class-zsch-setup-flow.php';
+require_once dirname( __DIR__ ) . '/includes/class-zsch-import-export.php';
+require_once dirname( __DIR__ ) . '/includes/class-zsch-dashboard.php';

@@ -25,9 +25,9 @@
  *
  * RECURSION CONSTRAINT (brief § 3.4): neither callback calls current_user_can()
  * or user_can(). Both use wp_get_current_user() for the user object and
- * CH_Core's recursion-safe helpers for role/capability checks.
+ * ZSCH_Core's recursion-safe helpers for role/capability checks.
  *
- * DIE MESSAGE: die_blocked() duplicates CH_Enforcer::die_blocked(). These two
+ * DIE MESSAGE: die_blocked() duplicates ZSCH_Enforcer::die_blocked(). These two
  * classes share no base class or trait in Phase 1 (premature for two callers).
  * If a third enforcement class needs the same helper, factor it then.
  *
@@ -39,15 +39,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class CH_Plugin_Protection
+ * Class ZSCH_Plugin_Protection
  */
-class CH_Plugin_Protection {
+class ZSCH_Plugin_Protection {
 
-	/** @var CH_Core */
+	/** @var ZSCH_Core */
 	private $core;
 
 	/**
-	 * @param CH_Core $core
+	 * @param ZSCH_Core $core
 	 */
 	public function __construct( $core ) {
 		$this->core = $core;
@@ -206,7 +206,7 @@ class CH_Plugin_Protection {
 	/**
 	 * Kill the page load with a localized blocked-action message.
 	 *
-	 * Duplicated from CH_Enforcer::die_blocked() — see the "DIE MESSAGE" note in
+	 * Duplicated from ZSCH_Enforcer::die_blocked() — see the "DIE MESSAGE" note in
 	 * the file docblock for why this is intentional rather than factored out.
 	 */
 	private function die_blocked() {
@@ -216,10 +216,10 @@ class CH_Plugin_Protection {
 		$email     = isset( $contact['email'] ) ? $contact['email'] : '';
 		$url       = isset( $contact['url'] )   ? $contact['url']   : '';
 
-		$message = '<p>' . esc_html( __( 'You do not have access to this page.', 'client-handoff' ) ) . '</p>';
+		$message = '<p>' . esc_html( __( 'You do not have access to this page.', 'zicstack-client-handoff' ) ) . '</p>';
 
 		if ( $name || $email || $url ) {
-			$message .= '<p>' . esc_html( __( 'For assistance, contact:', 'client-handoff' ) ) . ' ';
+			$message .= '<p>' . esc_html( __( 'For assistance, contact:', 'zicstack-client-handoff' ) ) . ' ';
 
 			if ( $name && $email ) {
 				$message .= esc_html( $name ) . ' &mdash; <a href="mailto:' . esc_attr( $email ) . '">' . esc_html( $email ) . '</a>';
@@ -238,7 +238,7 @@ class CH_Plugin_Protection {
 
 		wp_die(
 			wp_kses_post( $message ),
-			esc_html( __( 'Access Restricted', 'client-handoff' ) ),
+			esc_html( __( 'Access Restricted', 'zicstack-client-handoff' ) ),
 			array( 'response' => 403 )
 		);
 	}

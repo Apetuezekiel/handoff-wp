@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for CH_Notifications (nag/notice suppression, cosmetic layer).
+ * Unit tests for ZSCH_Notifications (nag/notice suppression, cosmetic layer).
  *
  * WP_Mock limitation: add_action() is an expectation assertion only — the hook
  * pipeline is never fired. All tests call suppress_notifications() directly.
@@ -32,11 +32,11 @@ class NotificationsTest extends TestCase {
 
 	public function setUp(): void {
 		parent::setUp();
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 	}
 
 	public function tearDown(): void {
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		parent::tearDown();
 	}
 
@@ -45,14 +45,14 @@ class NotificationsTest extends TestCase {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build a CH_Core instance backed by the given saved config.
+	 * Build a ZSCH_Core instance backed by the given saved config.
 	 *
 	 * @param array $config
-	 * @return CH_Core
+	 * @return ZSCH_Core
 	 */
 	private function make_core( array $config = array() ) {
 		WP_Mock::userFunction( 'get_option', array( 'return' => $config ) );
-		return CH_Core::get_instance();
+		return ZSCH_Core::get_instance();
 	}
 
 	/**
@@ -117,7 +117,7 @@ class NotificationsTest extends TestCase {
 		$core  = $this->make_core( $this->active_config( array(
 			'notifications' => array( 'suppress_nags' => true, 'suppress_updates' => false ),
 		) ) );
-		$notif = new CH_Notifications( $core );
+		$notif = new ZSCH_Notifications( $core );
 
 		WP_Mock::userFunction( 'wp_get_current_user', array(
 			'return' => $this->make_user( 5, array( 'subscriber' ) ),
@@ -147,7 +147,7 @@ class NotificationsTest extends TestCase {
 		$core  = $this->make_core( $this->active_config( array(
 			'notifications' => array( 'suppress_nags' => false, 'suppress_updates' => true ),
 		) ) );
-		$notif = new CH_Notifications( $core );
+		$notif = new ZSCH_Notifications( $core );
 
 		WP_Mock::userFunction( 'wp_get_current_user', array(
 			'return' => $this->make_user( 5, array( 'subscriber' ) ),
@@ -185,7 +185,7 @@ class NotificationsTest extends TestCase {
 		$core  = $this->make_core( $this->active_config( array(
 			'notifications' => array( 'suppress_nags' => true, 'suppress_updates' => true ),
 		) ) );
-		$notif = new CH_Notifications( $core );
+		$notif = new ZSCH_Notifications( $core );
 
 		WP_Mock::userFunction( 'wp_get_current_user', array(
 			'return' => $this->make_user( 5, array( 'subscriber' ) ),
@@ -212,7 +212,7 @@ class NotificationsTest extends TestCase {
 	 */
 	public function test_disabled_plugin_is_noop() {
 		$core  = $this->make_core( array( 'enabled' => false ) );
-		$notif = new CH_Notifications( $core );
+		$notif = new ZSCH_Notifications( $core );
 
 		$all_calls    = array();
 		$single_calls = array();
@@ -234,7 +234,7 @@ class NotificationsTest extends TestCase {
 	 */
 	public function test_both_flags_false_is_noop() {
 		$core  = $this->make_core( $this->active_config() ); // both flags default to false
-		$notif = new CH_Notifications( $core );
+		$notif = new ZSCH_Notifications( $core );
 
 		$all_calls    = array();
 		$single_calls = array();
@@ -257,7 +257,7 @@ class NotificationsTest extends TestCase {
 		$core  = $this->make_core( $this->active_config( array(
 			'notifications' => array( 'suppress_nags' => true, 'suppress_updates' => false ),
 		) ) );
-		$notif = new CH_Notifications( $core );
+		$notif = new ZSCH_Notifications( $core );
 
 		WP_Mock::userFunction( 'wp_get_current_user', array(
 			'return' => $this->make_user( 5, array( 'author' ) ), // author not in protected_roles
@@ -293,7 +293,7 @@ class NotificationsTest extends TestCase {
 			'admin_roles'     => array( 'editor' ),
 			'notifications'   => array( 'suppress_nags' => true, 'suppress_updates' => false ),
 		) ) );
-		$notif = new CH_Notifications( $core );
+		$notif = new ZSCH_Notifications( $core );
 
 		// User holds both 'subscriber' (protected) and 'editor' (admin_role).
 		// is_protected_user() sees 'subscriber' in protected_roles → true.

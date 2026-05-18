@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for CH_Setup_Flow (state methods only).
+ * Unit tests for ZSCH_Setup_Flow (state methods only).
  *
  * SCOPE
  * Tests S1–S8 cover should_show(), get_current_step(), get_step_index(), and
@@ -13,7 +13,7 @@
  * admin_url(), and several escaping functions across two code paths (settings
  * step and activate step). Testing it meaningfully requires capturing the
  * full output stream and mocking every WP output function — the same
- * rationale used to defer renderer tests for CH_Admin_Settings field
+ * rationale used to defer renderer tests for ZSCH_Admin_Settings field
  * renderers. Deferred to Phase 4 alongside those renderer tests.
  *
  * $_GET ISOLATION
@@ -22,8 +22,8 @@
  *
  * make_core() PATTERN
  * Identical to the pattern in AdminSettingsTest: one WP_Mock::userFunction()
- * call for get_option (which CH_Core reads in its constructor) plus
- * CH_Core::get_instance().
+ * call for get_option (which ZSCH_Core reads in its constructor) plus
+ * ZSCH_Core::get_instance().
  *
  * @package ClientHandoff
  */
@@ -44,13 +44,13 @@ class SetupFlowTest extends TestCase {
 
 	public function setUp(): void {
 		parent::setUp();
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		$this->original_get = $_GET;
 		$_GET               = array();
 	}
 
 	public function tearDown(): void {
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		$_GET = $this->original_get;
 		parent::tearDown();
 	}
@@ -60,14 +60,14 @@ class SetupFlowTest extends TestCase {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build a CH_Core instance backed by the given config array.
+	 * Build a ZSCH_Core instance backed by the given config array.
 	 *
 	 * @param array $config
-	 * @return CH_Core
+	 * @return ZSCH_Core
 	 */
-	private function make_core( array $config = array() ): CH_Core {
+	private function make_core( array $config = array() ): ZSCH_Core {
 		WP_Mock::userFunction( 'get_option', array( 'return' => $config ) );
-		return CH_Core::get_instance();
+		return ZSCH_Core::get_instance();
 	}
 
 	// =========================================================================
@@ -79,7 +79,7 @@ class SetupFlowTest extends TestCase {
 	 */
 	public function test_should_show_returns_true_when_setup_not_completed() {
 		$core = $this->make_core( array( 'setup_completed' => false ) );
-		$flow = new CH_Setup_Flow( $core );
+		$flow = new ZSCH_Setup_Flow( $core );
 
 		$this->assertTrue( $flow->should_show() );
 	}
@@ -93,7 +93,7 @@ class SetupFlowTest extends TestCase {
 	 */
 	public function test_should_show_returns_false_when_setup_completed() {
 		$core = $this->make_core( array( 'setup_completed' => true ) );
-		$flow = new CH_Setup_Flow( $core );
+		$flow = new ZSCH_Setup_Flow( $core );
 
 		$this->assertFalse( $flow->should_show() );
 	}
@@ -105,13 +105,13 @@ class SetupFlowTest extends TestCase {
 	/**
 	 * S3 — should_show() is true when the saved config is empty (fresh install).
 	 *
-	 * CH_Core hydrates the saved config against DEFAULTS on load. DEFAULTS has
+	 * ZSCH_Core hydrates the saved config against DEFAULTS on load. DEFAULTS has
 	 * setup_completed=false, so an empty saved array resolves to false — the
 	 * setup flow must be displayed.
 	 */
 	public function test_should_show_returns_true_when_setup_completed_key_absent() {
 		$core = $this->make_core( array() );
-		$flow = new CH_Setup_Flow( $core );
+		$flow = new ZSCH_Setup_Flow( $core );
 
 		$this->assertTrue(
 			$flow->should_show(),
@@ -124,13 +124,13 @@ class SetupFlowTest extends TestCase {
 	// =========================================================================
 
 	/**
-	 * S4 — get_current_step() returns 'roles' when ch_step is absent.
+	 * S4 — get_current_step() returns 'roles' when zsch_step is absent.
 	 */
 	public function test_get_current_step_defaults_to_roles() {
 		$core = $this->make_core();
-		$flow = new CH_Setup_Flow( $core );
+		$flow = new ZSCH_Setup_Flow( $core );
 
-		// $_GET is clean from setUp — ch_step absent.
+		// $_GET is clean from setUp — zsch_step absent.
 		$this->assertSame( 'roles', $flow->get_current_step() );
 	}
 
@@ -143,14 +143,14 @@ class SetupFlowTest extends TestCase {
 	 */
 	public function test_get_current_step_accepts_each_valid_step() {
 		$core = $this->make_core();
-		$flow = new CH_Setup_Flow( $core );
+		$flow = new ZSCH_Setup_Flow( $core );
 
-		foreach ( CH_Setup_Flow::STEPS as $step ) {
-			$_GET['ch_step'] = $step;
+		foreach ( ZSCH_Setup_Flow::STEPS as $step ) {
+			$_GET['zsch_step'] = $step;
 			$this->assertSame(
 				$step,
 				$flow->get_current_step(),
-				"get_current_step() must return '$step' when ch_step='$step'"
+				"get_current_step() must return '$step' when zsch_step='$step'"
 			);
 		}
 	}
@@ -164,14 +164,14 @@ class SetupFlowTest extends TestCase {
 	 */
 	public function test_get_current_step_rejects_unknown_step() {
 		$core = $this->make_core();
-		$flow = new CH_Setup_Flow( $core );
+		$flow = new ZSCH_Setup_Flow( $core );
 
-		$_GET['ch_step'] = 'hax0r';
+		$_GET['zsch_step'] = 'hax0r';
 
 		$this->assertSame(
 			'roles',
 			$flow->get_current_step(),
-			"Unknown ch_step value must fall back to 'roles'"
+			"Unknown zsch_step value must fall back to 'roles'"
 		);
 	}
 
@@ -184,7 +184,7 @@ class SetupFlowTest extends TestCase {
 	 */
 	public function test_get_next_step_returns_subsequent_step() {
 		$core = $this->make_core();
-		$flow = new CH_Setup_Flow( $core );
+		$flow = new ZSCH_Setup_Flow( $core );
 
 		$this->assertSame( 'dashboard',    $flow->get_next_step( 'roles' ) );
 		$this->assertSame( 'restrictions', $flow->get_next_step( 'dashboard' ) );
@@ -203,7 +203,7 @@ class SetupFlowTest extends TestCase {
 	 */
 	public function test_get_step_index_is_one_based() {
 		$core = $this->make_core();
-		$flow = new CH_Setup_Flow( $core );
+		$flow = new ZSCH_Setup_Flow( $core );
 
 		$this->assertSame( 1, $flow->get_step_index( 'roles' ),    "roles must be step 1" );
 		$this->assertSame( 2, $flow->get_step_index( 'dashboard' ), "dashboard must be step 2" );

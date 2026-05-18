@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for CH_Dashboard (gating, dashboard replacement, widget rendering).
+ * Unit tests for ZSCH_Dashboard (gating, dashboard replacement, widget rendering).
  *
  * GATING TESTS (T1–T5)
  * All four gate conditions are tested in isolation. T5 is the asymmetric-gate
@@ -46,13 +46,13 @@ class DashboardTest extends TestCase {
 
 	public function setUp(): void {
 		parent::setUp();
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		$this->saved_meta_boxes         = isset( $GLOBALS['wp_meta_boxes'] ) ? $GLOBALS['wp_meta_boxes'] : null;
 		$GLOBALS['wp_meta_boxes']       = array();
 	}
 
 	public function tearDown(): void {
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		if ( null === $this->saved_meta_boxes ) {
 			unset( $GLOBALS['wp_meta_boxes'] );
 		} else {
@@ -66,14 +66,14 @@ class DashboardTest extends TestCase {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build a CH_Core instance backed by the given config array.
+	 * Build a ZSCH_Core instance backed by the given config array.
 	 *
 	 * @param array $config
-	 * @return CH_Core
+	 * @return ZSCH_Core
 	 */
-	private function make_core( array $config = array() ): CH_Core {
+	private function make_core( array $config = array() ): ZSCH_Core {
 		WP_Mock::userFunction( 'get_option', array( 'return' => $config ) );
-		return CH_Core::get_instance();
+		return ZSCH_Core::get_instance();
 	}
 
 	/**
@@ -118,7 +118,7 @@ class DashboardTest extends TestCase {
 		$this->expectNotToPerformAssertions();
 
 		$core      = $this->make_core();
-		$dashboard = new CH_Dashboard( $core );
+		$dashboard = new ZSCH_Dashboard( $core );
 
 		WP_Mock::expectActionAdded( 'wp_dashboard_setup', array( $dashboard, 'replace_dashboard' ), 999 );
 
@@ -142,7 +142,7 @@ class DashboardTest extends TestCase {
 			'dashboard' => array( 'enabled' => true ),
 		);
 		$core      = $this->make_core( $config );
-		$dashboard = new CH_Dashboard( $core );
+		$dashboard = new ZSCH_Dashboard( $core );
 
 		$widget_calls = array();
 		WP_Mock::userFunction( 'wp_add_dashboard_widget', array(
@@ -172,7 +172,7 @@ class DashboardTest extends TestCase {
 			'dashboard' => array( 'enabled' => false ),
 		);
 		$core      = $this->make_core( $config );
-		$dashboard = new CH_Dashboard( $core );
+		$dashboard = new ZSCH_Dashboard( $core );
 
 		$widget_calls = array();
 		WP_Mock::userFunction( 'wp_add_dashboard_widget', array(
@@ -198,7 +198,7 @@ class DashboardTest extends TestCase {
 	 */
 	public function test_replace_dashboard_no_ops_when_user_status_is_neither() {
 		$core      = $this->make_core( $this->enabled_config() );
-		$dashboard = new CH_Dashboard( $core );
+		$dashboard = new ZSCH_Dashboard( $core );
 
 		$user = new WP_User( 5, array( 'author' ) );
 		WP_Mock::userFunction( 'wp_get_current_user', array( 'return' => $user ) );
@@ -222,14 +222,14 @@ class DashboardTest extends TestCase {
 	/**
 	 * T5 — Asymmetric-gate: admin_roles membership overrides protected_roles.
 	 *
-	 * User holds BOTH 'subscriber' (protected) and 'editor' (admin). CH_Core
+	 * User holds BOTH 'subscriber' (protected) and 'editor' (admin). ZSCH_Core
 	 * resolves admin_roles first by precedence, yielding status='admin'. The
 	 * dashboard must NOT be replaced — admin users need the standard dashboard
 	 * for site management.
 	 */
 	public function test_replace_dashboard_no_ops_when_user_holds_both_protected_and_admin_role() {
 		$core      = $this->make_core( $this->enabled_config() );
-		$dashboard = new CH_Dashboard( $core );
+		$dashboard = new ZSCH_Dashboard( $core );
 
 		// Both roles present — admin_roles precedence must win.
 		$user = new WP_User( 2, array( 'subscriber', 'editor' ) );
@@ -257,11 +257,11 @@ class DashboardTest extends TestCase {
 	 * Three widgets are pre-seeded in $wp_meta_boxes across two contexts. The
 	 * test verifies remove_meta_box() is called once per widget (correct ID and
 	 * 'dashboard' screen) and wp_add_dashboard_widget() is called exactly once
-	 * with CH_Dashboard::WIDGET_ID.
+	 * with ZSCH_Dashboard::WIDGET_ID.
 	 */
 	public function test_replace_dashboard_removes_all_widgets_and_registers_custom_widget() {
 		$core      = $this->make_core( $this->enabled_config() );
-		$dashboard = new CH_Dashboard( $core );
+		$dashboard = new ZSCH_Dashboard( $core );
 
 		// Pre-seed the global with 3 widgets in mixed contexts.
 		$GLOBALS['wp_meta_boxes']['dashboard']['normal']['high'] = array(
@@ -311,7 +311,7 @@ class DashboardTest extends TestCase {
 
 		// Our custom widget must be registered exactly once with WIDGET_ID.
 		$this->assertCount( 1, $widget_calls, 'wp_add_dashboard_widget must be called exactly once' );
-		$this->assertSame( CH_Dashboard::WIDGET_ID, $widget_calls[0][0], 'Widget ID must match CH_Dashboard::WIDGET_ID' );
+		$this->assertSame( ZSCH_Dashboard::WIDGET_ID, $widget_calls[0][0], 'Widget ID must match ZSCH_Dashboard::WIDGET_ID' );
 	}
 
 	// =========================================================================
@@ -330,7 +330,7 @@ class DashboardTest extends TestCase {
 			'welcome_message' => '<p>Welcome</p><script>alert(1)</script>',
 		) );
 		$core      = $this->make_core( $config );
-		$dashboard = new CH_Dashboard( $core );
+		$dashboard = new ZSCH_Dashboard( $core );
 
 		// render_activity_feed calls wp_get_current_user and get_posts.
 		$user = new WP_User( 42, array() );
@@ -361,7 +361,7 @@ class DashboardTest extends TestCase {
 	 */
 	public function test_render_activity_feed_queries_revisions_first_when_revisions_enabled() {
 		$core      = $this->make_core( $this->enabled_config() );
-		$dashboard = new CH_Dashboard( $core );
+		$dashboard = new ZSCH_Dashboard( $core );
 
 		$user = new WP_User( 42, array() );
 		WP_Mock::userFunction( 'wp_get_current_user', array( 'return' => $user ) );
@@ -402,7 +402,7 @@ class DashboardTest extends TestCase {
 		}
 
 		$core      = $this->make_core( $this->enabled_config() );
-		$dashboard = new CH_Dashboard( $core );
+		$dashboard = new ZSCH_Dashboard( $core );
 
 		$user = new WP_User( 42, array() );
 		WP_Mock::userFunction( 'wp_get_current_user', array( 'return' => $user ) );
@@ -444,7 +444,7 @@ class DashboardTest extends TestCase {
 	 */
 	public function test_render_activity_feed_shows_empty_state_when_no_activity() {
 		$core      = $this->make_core( $this->enabled_config() );
-		$dashboard = new CH_Dashboard( $core );
+		$dashboard = new ZSCH_Dashboard( $core );
 
 		$user = new WP_User( 42, array() );
 		WP_Mock::userFunction( 'wp_get_current_user', array( 'return' => $user ) );

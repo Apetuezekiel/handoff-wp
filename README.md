@@ -1,8 +1,8 @@
-# Client Handoff
+# Zicstack Client Handoff
 
 ![CI](https://github.com/Apetuezekiel/handoff-wp/actions/workflows/ci.yml/badge.svg)
 
-A WordPress plugin for structured developer-to-client handoff. Locks down the admin for non-technical clients without locking out the developer — enforced role-based restrictions, cosmetic simplification, and a clean operational dashboard.
+Zicstack Client Handoff is a WordPress plugin by Zicstack for structured developer-to-client handoff. It locks down the admin for non-technical clients without locking out the developer — enforced role-based restrictions, cosmetic simplification, and a clean operational dashboard.
 
 ## What it does
 
@@ -41,7 +41,7 @@ The plugin is **inert by default** — `enabled: false` means no user is ever re
 
 ## Configuration
 
-Configuration is stored in the `client_handoff_config` WordPress option as a single merged array. The shape:
+Configuration is stored in the `zsch_config` WordPress option as a single merged array. The shape:
 
 ```php
 [
@@ -84,7 +84,7 @@ Configuration is stored in the `client_handoff_config` WordPress option as a sin
 
 ### Built-in presets
 
-`CH_Menu_Manager` ships two preset slug lists for the settings UI:
+`ZSCH_Menu_Manager` ships two preset slug lists for the settings UI:
 
 - **`PRESET_CONTENT_MANAGER`** — hides Settings, Appearance, Plugins, Tools, Users.
 - **`PRESET_STORE_MANAGER`** — same minus Users (manager needs customer accounts).
@@ -92,16 +92,16 @@ Configuration is stored in the `client_handoff_config` WordPress option as a sin
 ## Architecture
 
 ```
-client-handoff.php          Plugin entry — requires, constants, lifecycle hooks
+zicstack-client-handoff.php Plugin entry — requires, constants, lifecycle hooks
 │
 ├── includes/
-│   ├── class-ch-core.php               Singleton: config, role resolution, safeguards
-│   ├── class-ch-enforcer.php           Enforcement: cap filter + screen guard
-│   ├── class-ch-plugin-protection.php  Enforcement: action-link removal + intercept
-│   ├── class-ch-menu-manager.php       Cosmetic: admin menu hiding
-│   ├── class-ch-admin-bar.php          Cosmetic: admin bar simplification
-│   ├── class-ch-notifications.php      Cosmetic: nag/notice suppression
-│   └── class-ch-admin-settings.php     UI: top-level page, nav-tab framework, Roles tab
+│   ├── class-zsch-core.php               Singleton: config, role resolution, safeguards
+│   ├── class-zsch-enforcer.php           Enforcement: cap filter + screen guard
+│   ├── class-zsch-plugin-protection.php  Enforcement: action-link removal + intercept
+│   ├── class-zsch-menu-manager.php       Cosmetic: admin menu hiding
+│   ├── class-zsch-admin-bar.php          Cosmetic: admin bar simplification
+│   ├── class-zsch-notifications.php      Cosmetic: nag/notice suppression
+│   └── class-zsch-admin-settings.php     UI: top-level page, nav-tab framework, Roles tab
 │
 └── tests/
     ├── bootstrap.php                   WP_Mock bootstrap + WordPress class stubs
@@ -117,7 +117,7 @@ client-handoff.php          Plugin entry — requires, constants, lifecycle hook
 
 ### Key design constraints
 
-- **No `current_user_can()` / `user_can()` inside `user_has_cap` callbacks** — those calls re-trigger `apply_filters('user_has_cap', ...)` from inside the callback, causing infinite recursion. All role/capability checks use `CH_Core::user_has_cap_unfiltered()` which reads `wp_roles()` directly.
+- **No `current_user_can()` / `user_can()` inside `user_has_cap` callbacks** — those calls re-trigger `apply_filters('user_has_cap', ...)` from inside the callback, causing infinite recursion. All role/capability checks use `ZSCH_Core::user_has_cap_unfiltered()` which reads `wp_roles()` directly.
 - **No Composer autoloader at runtime** — `require_once` only. Composer is dev-only (WP_Mock, PHPUnit).
 - **Enforcement vs cosmetic gating** — enforcement checks `is_exempt_from_enforcement()`; cosmetic layer does not.
 
@@ -141,7 +141,7 @@ With testdox output:
 ./vendor/bin/phpunit --testdox
 ```
 
-**94 tests, 191 assertions.**
+**175 tests, 466 assertions.**
 
 Tests use [WP_Mock](https://github.com/10up/wp_mock) and run without a WordPress install. The bootstrap pre-defines identity stubs for translation and escaping functions before `WP_Mock::bootstrap()` to prevent PHP 8.5 `TypeError` from typed stubs.
 

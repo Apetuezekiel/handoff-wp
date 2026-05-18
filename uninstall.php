@@ -1,12 +1,12 @@
 <?php
 /**
- * Uninstall — removes all data created by Client Handoff.
+ * Uninstall — removes all data created by Zicstack Client Handoff.
  *
- * Runs as a standalone file; MUST NOT require or depend on any class-ch-* file
+ * Runs as a standalone file; MUST NOT require or depend on any class-zsch-* file
  * (brief Constraint 11.6). Option names are hard-coded here for the same reason.
  *
  * Structured so each data category (options, cron, transients, CPT) is a
- * discrete block — Phase 2 adds the ch_help_note CPT block without refactoring
+ * discrete block — Phase 2 adds the zsch_help_note CPT block without refactoring
  * this file.
  *
  * MULTISITE BEHAVIOUR
@@ -26,28 +26,28 @@ if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
 
 // ---- Options ----------------------------------------------------------------
 
-delete_option( 'client_handoff_config' );
-delete_option( 'client_handoff_activity_log' );
-delete_option( 'client_handoff_checklist' );
+delete_option( 'zsch_config' );
+delete_option( 'zsch_activity_log' );
+delete_option( 'zsch_checklist' );
 
 // ---- Cron -------------------------------------------------------------------
 
-wp_clear_scheduled_hook( 'client_handoff_prune_log' );
+wp_clear_scheduled_hook( 'zsch_prune_log' );
 
 // ---- Transients -------------------------------------------------------------
-// ch_network_activation_notice is set by CH_Core::on_activation() when a
-// network-wide activation is attempted on multisite (see class-ch-core.php).
+// zsch_network_activation_notice is set by ZSCH_Core::on_activation() when a
+// network-wide activation is attempted on multisite (see class-zsch-core.php).
 // It has a 1-minute expiry and is almost certainly gone by uninstall time, but
 // cleanup is correct-by-construction.
 
-delete_transient( 'ch_network_activation_notice' );
+delete_transient( 'zsch_network_activation_notice' );
 
-// ---- CPT posts + meta (ch_help_note) ----------------------------------------
-// Phase 2 registers the ch_help_note CPT. When that ships, replace this block
+// ---- CPT posts + meta (zsch_help_note) ----------------------------------------
+// Phase 2 registers the zsch_help_note CPT. When that ships, replace this block
 // with the real removal loop:
 //
 //   $post_ids = get_posts( array(
-//       'post_type'      => 'ch_help_note',
+//       'post_type'      => 'zsch_help_note',
 //       'posts_per_page' => -1,
 //       'post_status'    => 'any',
 //       'fields'         => 'ids',

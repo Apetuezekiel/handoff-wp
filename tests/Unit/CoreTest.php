@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for CH_Core.
+ * Unit tests for ZSCH_Core.
  *
  * Covers: config defaults, role resolution (single- and multi-role users),
  * admin/protected precedence, all three lockout safeguards, the recursion-safe
@@ -22,11 +22,11 @@ class CoreTest extends TestCase {
 
 	public function setUp(): void {
 		parent::setUp(); // WP_Mock::setUp() called by parent.
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 	}
 
 	public function tearDown(): void {
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		parent::tearDown(); // WP_Mock::tearDown() called by parent.
 	}
 
@@ -35,16 +35,16 @@ class CoreTest extends TestCase {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build a CH_Core instance with get_option() mocked to return $config.
+	 * Build a ZSCH_Core instance with get_option() mocked to return $config.
 	 *
 	 * @param array $config Saved option value (empty = fresh activation).
-	 * @return CH_Core
+	 * @return ZSCH_Core
 	 */
 	private function make_core( array $config = array() ) {
 		WP_Mock::userFunction( 'get_option', array(
 			'return' => $config,
 		) );
-		return CH_Core::get_instance();
+		return ZSCH_Core::get_instance();
 	}
 
 	/**
@@ -223,7 +223,7 @@ class CoreTest extends TestCase {
 			'update_core',
 		);
 
-		$defaults    = CH_Core::DEFAULTS;
+		$defaults    = ZSCH_Core::DEFAULTS;
 		$blocked_caps = $defaults['enforcement']['blocked_caps'];
 
 		// Exact match — order matters because the array is used in foreach loops.

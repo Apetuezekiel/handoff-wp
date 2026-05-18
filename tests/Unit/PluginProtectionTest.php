@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for CH_Plugin_Protection (action-link removal + admin_init intercept).
+ * Unit tests for ZSCH_Plugin_Protection (action-link removal + admin_init intercept).
  *
  * Two test groups:
  *   1. Action-link filter — calls filter_plugin_action_links() directly with an
@@ -34,13 +34,13 @@ class PluginProtectionTest extends TestCase {
 
 	public function setUp(): void {
 		parent::setUp();
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		$this->saved_request = $_REQUEST;
 	}
 
 	public function tearDown(): void {
 		$_REQUEST = $this->saved_request;
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		parent::tearDown();
 	}
 
@@ -49,14 +49,14 @@ class PluginProtectionTest extends TestCase {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build a CH_Core instance backed by the given saved config.
+	 * Build a ZSCH_Core instance backed by the given saved config.
 	 *
 	 * @param array $config
-	 * @return CH_Core
+	 * @return ZSCH_Core
 	 */
 	private function make_core( array $config = array() ) {
 		WP_Mock::userFunction( 'get_option', array( 'return' => $config ) );
-		return CH_Core::get_instance();
+		return ZSCH_Core::get_instance();
 	}
 
 	/**
@@ -161,7 +161,7 @@ class PluginProtectionTest extends TestCase {
 		) );
 
 		$core       = $this->make_core( $this->active_config() );
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 
 		$result = $protection->filter_plugin_action_links(
 			$this->full_actions(),
@@ -187,7 +187,7 @@ class PluginProtectionTest extends TestCase {
 		// No wp_get_current_user / is_multisite / wp_roles mocks: the filter
 		// returns at the protected_plugins check before touching the user.
 		$core       = $this->make_core( $this->active_config() );
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$actions    = $this->full_actions();
 
 		$result = $protection->filter_plugin_action_links( $actions, 'other/other.php' );
@@ -206,7 +206,7 @@ class PluginProtectionTest extends TestCase {
 		) );
 
 		$core       = $this->make_core( $this->active_config() ); // protected_roles=['subscriber']
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$actions    = $this->full_actions();
 
 		$result = $protection->filter_plugin_action_links( $actions, 'protected/protected.php' );
@@ -222,7 +222,7 @@ class PluginProtectionTest extends TestCase {
 	public function test_action_links_unchanged_when_plugin_disabled() {
 		// disabled check is the very first → no other mocks needed.
 		$core       = $this->make_core( array( 'enabled' => false ) );
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$actions    = $this->full_actions();
 
 		$result = $protection->filter_plugin_action_links( $actions, 'protected/protected.php' );
@@ -242,7 +242,7 @@ class PluginProtectionTest extends TestCase {
 		) );
 
 		$core       = $this->make_core( $this->active_config() );
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$actions    = $this->full_actions();
 
 		$result = $protection->filter_plugin_action_links( $actions, 'protected/protected.php' );
@@ -266,7 +266,7 @@ class PluginProtectionTest extends TestCase {
 
 		$config     = $this->active_config( array( 'admin_roles' => array( 'editor' ) ) );
 		$core       = $this->make_core( $config );
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$actions    = $this->full_actions();
 
 		$result = $protection->filter_plugin_action_links( $actions, 'protected/protected.php' );
@@ -298,7 +298,7 @@ class PluginProtectionTest extends TestCase {
 			'protected_roles' => array( 'custom_admin' ),
 		) );
 		$core       = $this->make_core( $config );
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$actions    = $this->full_actions();
 
 		$result = $protection->filter_plugin_action_links( $actions, 'protected/protected.php' );
@@ -334,7 +334,7 @@ class PluginProtectionTest extends TestCase {
 		$this->mock_wp_die( $wp_die_called );
 
 		$core       = $this->make_core( $this->active_config() );
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$protection->intercept_plugin_action();
 
 		$this->assertTrue( $wp_die_called, 'wp_die() must be called when deactivating a protected plugin' );
@@ -364,7 +364,7 @@ class PluginProtectionTest extends TestCase {
 		$this->mock_wp_die( $wp_die_called );
 
 		$core       = $this->make_core( $this->active_config() );
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$protection->intercept_plugin_action();
 
 		$this->assertTrue( $wp_die_called, 'wp_die() must be called for deactivate-selected on a protected plugin' );
@@ -394,7 +394,7 @@ class PluginProtectionTest extends TestCase {
 		$this->mock_wp_die( $wp_die_called );
 
 		$core       = $this->make_core( $this->active_config() );
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$protection->intercept_plugin_action();
 
 		$this->assertTrue( $wp_die_called, 'wp_die() must be called for delete-selected on a protected plugin' );
@@ -424,7 +424,7 @@ class PluginProtectionTest extends TestCase {
 		$this->mock_wp_die( $wp_die_called );
 
 		$core       = $this->make_core( $this->active_config() );
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$protection->intercept_plugin_action();
 
 		$this->assertTrue( $wp_die_called, 'wp_die() must be called when any checked[] entry is a protected plugin' );
@@ -453,7 +453,7 @@ class PluginProtectionTest extends TestCase {
 		$this->mock_wp_die( $wp_die_called );
 
 		$core       = $this->make_core( $this->active_config() );
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$protection->intercept_plugin_action();
 
 		$this->assertFalse( $wp_die_called, 'wp_die() must not be called when no checked[] entry is protected' );
@@ -474,7 +474,7 @@ class PluginProtectionTest extends TestCase {
 		$this->mock_wp_die( $wp_die_called );
 
 		$core       = $this->make_core( $this->active_config() );
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$protection->intercept_plugin_action();
 
 		$this->assertFalse( $wp_die_called, 'wp_die() must not be called for a non-matching action' );
@@ -492,7 +492,7 @@ class PluginProtectionTest extends TestCase {
 		$this->mock_wp_die( $wp_die_called );
 
 		$core       = $this->make_core( $this->active_config() );
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$protection->intercept_plugin_action();
 
 		$this->assertFalse( $wp_die_called, 'wp_die() must not be called when no action param is present' );
@@ -515,7 +515,7 @@ class PluginProtectionTest extends TestCase {
 		$this->mock_wp_die( $wp_die_called );
 
 		$core       = $this->make_core( $this->active_config() ); // protected_roles=['subscriber']
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$protection->intercept_plugin_action();
 
 		$this->assertFalse( $wp_die_called, 'wp_die() must not be called for a non-protected user' );
@@ -539,7 +539,7 @@ class PluginProtectionTest extends TestCase {
 		$this->mock_wp_die( $wp_die_called );
 
 		$core       = $this->make_core( $this->active_config() );
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$protection->intercept_plugin_action();
 
 		$this->assertFalse( $wp_die_called, 'wp_die() must not be called for user ID 1 (always-exempt safeguard)' );
@@ -559,7 +559,7 @@ class PluginProtectionTest extends TestCase {
 		$this->mock_wp_die( $wp_die_called );
 
 		$core       = $this->make_core( array( 'enabled' => false ) );
-		$protection = new CH_Plugin_Protection( $core );
+		$protection = new ZSCH_Plugin_Protection( $core );
 		$protection->intercept_plugin_action();
 
 		$this->assertFalse( $wp_die_called, 'wp_die() must not be called when plugin is disabled' );

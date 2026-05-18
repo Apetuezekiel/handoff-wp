@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for CH_Enforcer (capability filter + screen guard).
+ * Unit tests for ZSCH_Enforcer (capability filter + screen guard).
  *
  * Three test groups:
  *   1. Capability filter — blocked_caps are stripped; early-return paths are no-ops.
@@ -25,11 +25,11 @@ class EnforcerTest extends TestCase {
 
 	public function setUp(): void {
 		parent::setUp();
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 	}
 
 	public function tearDown(): void {
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		parent::tearDown();
 	}
 
@@ -38,14 +38,14 @@ class EnforcerTest extends TestCase {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build a CH_Core instance backed by the given saved config.
+	 * Build a ZSCH_Core instance backed by the given saved config.
 	 *
 	 * @param array $config
-	 * @return CH_Core
+	 * @return ZSCH_Core
 	 */
 	private function make_core( array $config = array() ) {
 		WP_Mock::userFunction( 'get_option', array( 'return' => $config ) );
-		return CH_Core::get_instance();
+		return ZSCH_Core::get_instance();
 	}
 
 	/**
@@ -86,7 +86,7 @@ class EnforcerTest extends TestCase {
 				'protected_roles' => array( 'subscriber' ),
 				'admin_roles'     => array(),
 				'enforcement'     => array(
-					'blocked_caps'      => CH_Core::DEFAULTS['enforcement']['blocked_caps'],
+					'blocked_caps'      => ZSCH_Core::DEFAULTS['enforcement']['blocked_caps'],
 					'screen_blocklist'  => array(),
 					'protected_plugins' => array(),
 				),
@@ -121,18 +121,18 @@ class EnforcerTest extends TestCase {
 		) );
 
 		$core     = $this->make_core( $this->active_config() );
-		$enforcer = new CH_Enforcer( $core );
+		$enforcer = new ZSCH_Enforcer( $core );
 		$user     = $this->make_user( 5, array( 'subscriber' ) );
 
 		// Give the user every blocked cap so we can verify they all get stripped.
 		$allcaps = array( 'read' => true );
-		foreach ( CH_Core::DEFAULTS['enforcement']['blocked_caps'] as $cap ) {
+		foreach ( ZSCH_Core::DEFAULTS['enforcement']['blocked_caps'] as $cap ) {
 			$allcaps[ $cap ] = true;
 		}
 
 		$result = $enforcer->filter_user_has_cap( $allcaps, array( 'read' ), array( 'read', 5 ), $user );
 
-		foreach ( CH_Core::DEFAULTS['enforcement']['blocked_caps'] as $cap ) {
+		foreach ( ZSCH_Core::DEFAULTS['enforcement']['blocked_caps'] as $cap ) {
 			$this->assertArrayNotHasKey(
 				$cap,
 				$result,
@@ -150,7 +150,7 @@ class EnforcerTest extends TestCase {
 	 */
 	public function test_cap_filter_is_noop_when_plugin_disabled() {
 		$core     = $this->make_core( array( 'enabled' => false ) );
-		$enforcer = new CH_Enforcer( $core );
+		$enforcer = new ZSCH_Enforcer( $core );
 		$user     = $this->make_user( 5, array( 'subscriber' ) );
 		$allcaps  = array( 'read' => true, 'activate_plugins' => true );
 
@@ -166,7 +166,7 @@ class EnforcerTest extends TestCase {
 	 */
 	public function test_cap_filter_is_noop_for_non_protected_user() {
 		$core     = $this->make_core( $this->active_config() ); // protected_roles=['subscriber']
-		$enforcer = new CH_Enforcer( $core );
+		$enforcer = new ZSCH_Enforcer( $core );
 		$user     = $this->make_user( 5, array( 'author' ) ); // author is not protected.
 		$allcaps  = array( 'read' => true, 'activate_plugins' => true );
 
@@ -183,7 +183,7 @@ class EnforcerTest extends TestCase {
 	public function test_cap_filter_is_noop_for_user_id_1() {
 		// ID=1 check fires before is_multisite() — no mock needed.
 		$core     = $this->make_core( $this->active_config() );
-		$enforcer = new CH_Enforcer( $core );
+		$enforcer = new ZSCH_Enforcer( $core );
 		$user     = $this->make_user( 1, array( 'subscriber' ) );
 		$allcaps  = array( 'read' => true, 'activate_plugins' => true );
 
@@ -202,7 +202,7 @@ class EnforcerTest extends TestCase {
 
 		$config   = $this->active_config( array( 'admin_roles' => array( 'editor' ) ) );
 		$core     = $this->make_core( $config );
-		$enforcer = new CH_Enforcer( $core );
+		$enforcer = new ZSCH_Enforcer( $core );
 		// editor is in protected_roles AND admin_roles — admin takes precedence.
 		$user     = $this->make_user( 5, array( 'subscriber', 'editor' ) );
 		$allcaps  = array( 'read' => true, 'activate_plugins' => true );
@@ -231,7 +231,7 @@ class EnforcerTest extends TestCase {
 
 		$config   = $this->active_config( array( 'protected_roles' => array( 'custom_role' ) ) );
 		$core     = $this->make_core( $config );
-		$enforcer = new CH_Enforcer( $core );
+		$enforcer = new ZSCH_Enforcer( $core );
 		$user     = $this->make_user( 5, array( 'custom_role' ) );
 		$allcaps  = array( 'read' => true, 'activate_plugins' => true );
 
@@ -274,7 +274,7 @@ class EnforcerTest extends TestCase {
 		) );
 
 		$core     = $this->make_core( $this->active_config() );
-		$enforcer = new CH_Enforcer( $core );
+		$enforcer = new ZSCH_Enforcer( $core );
 
 		// If current_user_can() is called inside the callback, this flag flips.
 		// WP_Mock uses 'return' => Closure for callback-based returns.
@@ -350,7 +350,7 @@ class EnforcerTest extends TestCase {
 		) );
 
 		$core     = $this->make_core( $config );
-		$enforcer = new CH_Enforcer( $core );
+		$enforcer = new ZSCH_Enforcer( $core );
 		$enforcer->guard_current_screen( $this->make_screen( 'options-general.php' ) );
 
 		$this->assertTrue( $wp_die_called, 'wp_die() must be called for a protected user on a blocklisted screen' );
@@ -380,7 +380,7 @@ class EnforcerTest extends TestCase {
 	 * @test
 	 */
 	public function test_screen_guard_never_blocks_settings_screen() {
-		$this->assert_screen_never_blocked( CH_Enforcer::SETTINGS_SCREEN_ID );
+		$this->assert_screen_never_blocked( ZSCH_Enforcer::SETTINGS_SCREEN_ID );
 	}
 
 	/**
@@ -390,7 +390,7 @@ class EnforcerTest extends TestCase {
 	 */
 	public function test_screen_guard_is_noop_when_plugin_disabled() {
 		$core     = $this->make_core( array( 'enabled' => false ) );
-		$enforcer = new CH_Enforcer( $core );
+		$enforcer = new ZSCH_Enforcer( $core );
 
 		$wp_die_called = false;
 		WP_Mock::userFunction( 'wp_die', array(
@@ -416,7 +416,7 @@ class EnforcerTest extends TestCase {
 		) );
 
 		$core     = $this->make_core( $this->active_config() ); // protected_roles=['subscriber']
-		$enforcer = new CH_Enforcer( $core );
+		$enforcer = new ZSCH_Enforcer( $core );
 
 		$wp_die_called = false;
 		WP_Mock::userFunction( 'wp_die', array(
@@ -453,7 +453,7 @@ class EnforcerTest extends TestCase {
 		) );
 
 		$core     = $this->make_core( $config );
-		$enforcer = new CH_Enforcer( $core );
+		$enforcer = new ZSCH_Enforcer( $core );
 
 		// ID=1 exemption fires before is_multisite() and wp_roles() — no extra mocks.
 		$wp_die_called = false;
@@ -496,7 +496,7 @@ class EnforcerTest extends TestCase {
 		) );
 
 		$core     = $this->make_core( $config );
-		$enforcer = new CH_Enforcer( $core );
+		$enforcer = new ZSCH_Enforcer( $core );
 
 		$wp_die_called = false;
 		WP_Mock::userFunction( 'wp_die', array(
@@ -547,7 +547,7 @@ class EnforcerTest extends TestCase {
 		) );
 
 		$core     = $this->make_core( $config );
-		$enforcer = new CH_Enforcer( $core );
+		$enforcer = new ZSCH_Enforcer( $core );
 
 		// Track wp_die() with a flag so the assertion is meaningful.
 		// If is_always_permitted() fails and the blocklist branch runs,
