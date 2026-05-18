@@ -1,7 +1,7 @@
 <?php
 /**
  * Phase 4 renderer consolidation — Pass A.
- * Field renderer tests for CH_Admin_Settings (RF1–RF9).
+ * Field renderer tests for ZSCH_Admin_Settings (RF1–RF9).
  *
  * SCOPE — Pass A: non-trivial field renderers only
  *
@@ -47,11 +47,11 @@ class AdminSettingsRenderTest extends TestCase {
 
 	public function setUp(): void {
 		parent::setUp();
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 	}
 
 	public function tearDown(): void {
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		parent::tearDown();
 	}
 
@@ -60,14 +60,14 @@ class AdminSettingsRenderTest extends TestCase {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build a CH_Core instance backed by the given config array.
+	 * Build a ZSCH_Core instance backed by the given config array.
 	 *
 	 * @param array $config
-	 * @return CH_Core
+	 * @return ZSCH_Core
 	 */
-	private function make_core( array $config = array() ): CH_Core {
+	private function make_core( array $config = array() ): ZSCH_Core {
 		WP_Mock::userFunction( 'get_option', array( 'return' => $config ) );
-		return CH_Core::get_instance();
+		return ZSCH_Core::get_instance();
 	}
 
 	/**
@@ -113,7 +113,7 @@ class AdminSettingsRenderTest extends TestCase {
 	 */
 	public function test_render_protected_roles_field_renders_checkbox_for_each_role() {
 		$core     = $this->make_core( array( 'protected_roles' => array() ) );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_wp_roles( array(
 			'subscriber'  => array( 'read' => true ),
@@ -125,17 +125,17 @@ class AdminSettingsRenderTest extends TestCase {
 
 		// All three slugs appear as checkbox values.
 		$this->assertStringContainsString(
-			'name="client_handoff_config[protected_roles][]" value="subscriber"',
+			'name="zsch_config[protected_roles][]" value="subscriber"',
 			$html,
 			'subscriber checkbox must be present'
 		);
 		$this->assertStringContainsString(
-			'name="client_handoff_config[protected_roles][]" value="editor"',
+			'name="zsch_config[protected_roles][]" value="editor"',
 			$html,
 			'editor checkbox must be present'
 		);
 		$this->assertStringContainsString(
-			'name="client_handoff_config[protected_roles][]" value="custom_role"',
+			'name="zsch_config[protected_roles][]" value="custom_role"',
 			$html,
 			'custom_role checkbox must be present'
 		);
@@ -160,7 +160,7 @@ class AdminSettingsRenderTest extends TestCase {
 	 */
 	public function test_render_protected_roles_field_marks_saved_roles_as_checked() {
 		$core     = $this->make_core( array( 'protected_roles' => array( 'subscriber' ) ) );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_wp_roles( array(
 			'subscriber'  => array( 'read' => true ),
@@ -204,7 +204,7 @@ class AdminSettingsRenderTest extends TestCase {
 	 */
 	public function test_render_admin_roles_field_renders_checkbox_for_each_role() {
 		$core     = $this->make_core( array( 'admin_roles' => array( 'editor' ) ) );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_wp_roles( array(
 			'subscriber' => array( 'read' => true ),
@@ -215,12 +215,12 @@ class AdminSettingsRenderTest extends TestCase {
 		$html = $this->capture( array( $settings, 'render_admin_roles_field' ) );
 
 		$this->assertStringContainsString(
-			'name="client_handoff_config[admin_roles][]" value="subscriber"',
+			'name="zsch_config[admin_roles][]" value="subscriber"',
 			$html,
 			'subscriber checkbox must appear under admin_roles name'
 		);
 		$this->assertStringContainsString(
-			'name="client_handoff_config[admin_roles][]" value="editor"',
+			'name="zsch_config[admin_roles][]" value="editor"',
 			$html,
 			'editor checkbox must appear under admin_roles name'
 		);
@@ -243,22 +243,22 @@ class AdminSettingsRenderTest extends TestCase {
 
 	/**
 	 * RF4 — render_blocked_caps_field renders one checkbox for every capability
-	 * in CH_Core::DEFAULTS['enforcement']['blocked_caps'].
+	 * in ZSCH_Core::DEFAULTS['enforcement']['blocked_caps'].
 	 *
 	 * Assertions loop over the DEFAULTS list so a future addition to DEFAULTS
 	 * is automatically covered without editing this test.
 	 */
 	public function test_render_blocked_caps_field_renders_a_checkbox_for_each_default_cap() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$html = $this->capture( array( $settings, 'render_blocked_caps_field' ) );
 
-		$default_caps = CH_Core::DEFAULTS['enforcement']['blocked_caps'];
+		$default_caps = ZSCH_Core::DEFAULTS['enforcement']['blocked_caps'];
 
 		foreach ( $default_caps as $cap ) {
 			$this->assertStringContainsString(
-				'name="client_handoff_config[enforcement][blocked_caps][]" value="' . $cap . '"',
+				'name="zsch_config[enforcement][blocked_caps][]" value="' . $cap . '"',
 				$html,
 				"A checkbox for cap '$cap' must be present in the blocked_caps field output"
 			);
@@ -281,7 +281,7 @@ class AdminSettingsRenderTest extends TestCase {
 				'blocked_caps' => array( 'install_plugins', 'activate_plugins' ),
 			),
 		) );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$html = $this->capture( array( $settings, 'render_blocked_caps_field' ) );
 
@@ -318,7 +318,7 @@ class AdminSettingsRenderTest extends TestCase {
 	 */
 	public function test_render_protected_plugins_field_renders_a_checkbox_for_each_installed_plugin() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_get_plugins( array(
 			'akismet/akismet.php'       => array( 'Name' => 'Akismet Anti-Spam' ),
@@ -331,7 +331,7 @@ class AdminSettingsRenderTest extends TestCase {
 		$basenames = array( 'akismet/akismet.php', 'real-plugin/real.php', 'another/another.php' );
 		foreach ( $basenames as $basename ) {
 			$this->assertStringContainsString(
-				'name="client_handoff_config[enforcement][protected_plugins][]" value="' . $basename . '"',
+				'name="zsch_config[enforcement][protected_plugins][]" value="' . $basename . '"',
 				$html,
 				"A checkbox for '$basename' must be present"
 			);
@@ -357,7 +357,7 @@ class AdminSettingsRenderTest extends TestCase {
 	 */
 	public function test_render_protected_plugins_field_shows_empty_state_when_no_plugins() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_get_plugins( array() );
 
@@ -369,7 +369,7 @@ class AdminSettingsRenderTest extends TestCase {
 			'Empty-state message must appear when get_plugins returns an empty array'
 		);
 		$this->assertStringNotContainsString(
-			'name="client_handoff_config[enforcement][protected_plugins][]"',
+			'name="zsch_config[enforcement][protected_plugins][]"',
 			$html,
 			'No checkbox inputs must be rendered when there are no plugins'
 		);
@@ -389,23 +389,23 @@ class AdminSettingsRenderTest extends TestCase {
 	 */
 	public function test_render_quick_links_field_renders_five_rows() {
 		$core     = $this->make_core( array( 'dashboard' => array( 'quick_links' => array() ) ) );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$html = $this->capture( array( $settings, 'render_quick_links_field' ) );
 
 		for ( $i = 0; $i < 5; $i++ ) {
 			$this->assertStringContainsString(
-				'name="client_handoff_config[dashboard][quick_links][' . $i . '][label]"',
+				'name="zsch_config[dashboard][quick_links][' . $i . '][label]"',
 				$html,
 				"Row $i label input must be present"
 			);
 			$this->assertStringContainsString(
-				'name="client_handoff_config[dashboard][quick_links][' . $i . '][url]"',
+				'name="zsch_config[dashboard][quick_links][' . $i . '][url]"',
 				$html,
 				"Row $i url input must be present"
 			);
 			$this->assertStringContainsString(
-				'name="client_handoff_config[dashboard][quick_links][' . $i . '][icon]"',
+				'name="zsch_config[dashboard][quick_links][' . $i . '][icon]"',
 				$html,
 				"Row $i icon input must be present"
 			);
@@ -430,7 +430,7 @@ class AdminSettingsRenderTest extends TestCase {
 			array( 'label' => 'Media', 'url' => '/upload.php', 'icon' => 'dashicons-media-default' ),
 		);
 		$core     = $this->make_core( array( 'dashboard' => array( 'quick_links' => $saved_links ) ) );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$html = $this->capture( array( $settings, 'render_quick_links_field' ) );
 
@@ -465,27 +465,27 @@ class AdminSettingsRenderTest extends TestCase {
 	 * B1 — render_export_import_section emits an export form with the correct
 	 * admin-post action value and matching nonce field.
 	 *
-	 * Mutation: changing 'ch_export_config' in the renderer (either the hidden
+	 * Mutation: changing 'zsch_export_config' in the renderer (either the hidden
 	 * action input or the wp_nonce_field call) causes this test to fail.
 	 */
 	public function test_render_export_import_section_outputs_export_form_with_correct_action() {
 		// Ensure notice branches are not triggered.
-		unset( $_GET['ch_import_success'], $_GET['ch_import_error'] );
+		unset( $_GET['zsch_import_success'], $_GET['zsch_import_error'] );
 
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$html = $this->capture( array( $settings, 'render_export_import_section' ) );
 
 		$this->assertStringContainsString(
-			'<input type="hidden" name="action" value="ch_export_config">',
+			'<input type="hidden" name="action" value="zsch_export_config">',
 			$html,
-			'Export form must post action=ch_export_config to admin-post.php'
+			'Export form must post action=zsch_export_config to admin-post.php'
 		);
 		$this->assertStringContainsString(
-			'<!-- wp_nonce_field:ch_export_config -->',
+			'<!-- wp_nonce_field:zsch_export_config -->',
 			$html,
-			'Export form must request a nonce for the ch_export_config action'
+			'Export form must request a nonce for the zsch_export_config action'
 		);
 	}
 
@@ -501,10 +501,10 @@ class AdminSettingsRenderTest extends TestCase {
 	 * changing the action name fails this test.
 	 */
 	public function test_render_export_import_section_outputs_import_form_with_upload_field() {
-		unset( $_GET['ch_import_success'], $_GET['ch_import_error'] );
+		unset( $_GET['zsch_import_success'], $_GET['zsch_import_error'] );
 
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$html = $this->capture( array( $settings, 'render_export_import_section' ) );
 
@@ -514,19 +514,19 @@ class AdminSettingsRenderTest extends TestCase {
 			'Import form must declare multipart/form-data enctype for file upload'
 		);
 		$this->assertStringContainsString(
-			'type="file" name="ch_config_file"',
+			'type="file" name="zsch_config_file"',
 			$html,
-			'Import form must include a file input named ch_config_file'
+			'Import form must include a file input named zsch_config_file'
 		);
 		$this->assertStringContainsString(
-			'<input type="hidden" name="action" value="ch_import_config">',
+			'<input type="hidden" name="action" value="zsch_import_config">',
 			$html,
-			'Import form must post action=ch_import_config to admin-post.php'
+			'Import form must post action=zsch_import_config to admin-post.php'
 		);
 		$this->assertStringContainsString(
-			'<!-- wp_nonce_field:ch_import_config -->',
+			'<!-- wp_nonce_field:zsch_import_config -->',
 			$html,
-			'Import form must request a nonce for the ch_import_config action'
+			'Import form must request a nonce for the zsch_import_config action'
 		);
 	}
 
@@ -535,7 +535,7 @@ class AdminSettingsRenderTest extends TestCase {
 	// =========================================================================
 
 	/**
-	 * B3 — render_rerun_setup_section emits no output when CH_Admin_Settings
+	 * B3 — render_rerun_setup_section emits no output when ZSCH_Admin_Settings
 	 * was constructed without a setup flow (null default).
 	 *
 	 * This is the regression test for the null-check guard introduced in the
@@ -545,7 +545,7 @@ class AdminSettingsRenderTest extends TestCase {
 	public function test_render_rerun_setup_section_outputs_nothing_when_setup_flow_is_null() {
 		$core     = $this->make_core();
 		// Explicitly no setup_flow argument — null is the default.
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$html = $this->capture( array( $settings, 'render_rerun_setup_section' ) );
 
@@ -561,7 +561,7 @@ class AdminSettingsRenderTest extends TestCase {
 	// =========================================================================
 
 	/**
-	 * B4 — render_rerun_setup_section emits the _ch_setup_rerun hidden input
+	 * B4 — render_rerun_setup_section emits the _zsch_setup_rerun hidden input
 	 * and the settings_fields nonce marker when a setup flow is present.
 	 *
 	 * Mutation: removing the hidden marker input or the settings_fields call
@@ -570,23 +570,23 @@ class AdminSettingsRenderTest extends TestCase {
 	 */
 	public function test_render_rerun_setup_section_outputs_rerun_marker_when_setup_flow_present() {
 		$core       = $this->make_core();
-		$setup_flow = new CH_Setup_Flow( $core );
-		$settings   = new CH_Admin_Settings( $core, $setup_flow );
+		$setup_flow = new ZSCH_Setup_Flow( $core );
+		$settings   = new ZSCH_Admin_Settings( $core, $setup_flow );
 
 		$html = $this->capture( array( $settings, 'render_rerun_setup_section' ) );
 
 		$this->assertStringContainsString(
-			'name="client_handoff_config[_ch_setup_rerun]"',
+			'name="zsch_config[_zsch_setup_rerun]"',
 			$html,
-			'Re-run section must include a hidden input for the _ch_setup_rerun marker'
+			'Re-run section must include a hidden input for the _zsch_setup_rerun marker'
 		);
 		$this->assertStringContainsString(
 			'value="1"',
 			$html,
-			'The _ch_setup_rerun hidden input must have value="1"'
+			'The _zsch_setup_rerun hidden input must have value="1"'
 		);
 		$this->assertStringContainsString(
-			'<!-- settings_fields:client_handoff_config -->',
+			'<!-- settings_fields:zsch_config -->',
 			$html,
 			'Re-run section must call settings_fields with the plugin option group'
 		);

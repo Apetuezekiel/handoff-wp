@@ -20,13 +20,13 @@
  * already catches them. Running the narrower remove_action calls afterward
  * would be harmless but redundant — this class skips them explicitly.
  *
- * GATING ASYMMETRY WITH CH_Menu_Manager
+ * GATING ASYMMETRY WITH ZSCH_Menu_Manager
  *
- * CH_Menu_Manager uses a per-role hidden_menus map and does NOT consult
+ * ZSCH_Menu_Manager uses a per-role hidden_menus map and does NOT consult
  * protected_roles — any role keyed in hidden_menus gets menus hidden.
- * CH_Notifications has no per-role mapping: suppress_nags and
+ * ZSCH_Notifications has no per-role mapping: suppress_nags and
  * suppress_updates are global booleans. The role gate therefore uses
- * protected_roles, matching CH_Admin_Bar rather than CH_Menu_Manager.
+ * protected_roles, matching ZSCH_Admin_Bar rather than ZSCH_Menu_Manager.
  *
  * Like all cosmetic-layer classes, this class does NOT call
  * is_exempt_from_enforcement(). Protected users receive suppression
@@ -46,15 +46,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class CH_Notifications
+ * Class ZSCH_Notifications
  */
-class CH_Notifications {
+class ZSCH_Notifications {
 
-	/** @var CH_Core */
+	/** @var ZSCH_Core */
 	private $core;
 
 	/**
-	 * @param CH_Core $core
+	 * @param ZSCH_Core $core
 	 */
 	public function __construct( $core ) {
 		$this->core = $core;

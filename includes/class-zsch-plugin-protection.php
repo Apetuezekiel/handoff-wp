@@ -25,9 +25,9 @@
  *
  * RECURSION CONSTRAINT (brief § 3.4): neither callback calls current_user_can()
  * or user_can(). Both use wp_get_current_user() for the user object and
- * CH_Core's recursion-safe helpers for role/capability checks.
+ * ZSCH_Core's recursion-safe helpers for role/capability checks.
  *
- * DIE MESSAGE: die_blocked() duplicates CH_Enforcer::die_blocked(). These two
+ * DIE MESSAGE: die_blocked() duplicates ZSCH_Enforcer::die_blocked(). These two
  * classes share no base class or trait in Phase 1 (premature for two callers).
  * If a third enforcement class needs the same helper, factor it then.
  *
@@ -39,15 +39,15 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class CH_Plugin_Protection
+ * Class ZSCH_Plugin_Protection
  */
-class CH_Plugin_Protection {
+class ZSCH_Plugin_Protection {
 
-	/** @var CH_Core */
+	/** @var ZSCH_Core */
 	private $core;
 
 	/**
-	 * @param CH_Core $core
+	 * @param ZSCH_Core $core
 	 */
 	public function __construct( $core ) {
 		$this->core = $core;
@@ -206,7 +206,7 @@ class CH_Plugin_Protection {
 	/**
 	 * Kill the page load with a localized blocked-action message.
 	 *
-	 * Duplicated from CH_Enforcer::die_blocked() — see the "DIE MESSAGE" note in
+	 * Duplicated from ZSCH_Enforcer::die_blocked() — see the "DIE MESSAGE" note in
 	 * the file docblock for why this is intentional rather than factored out.
 	 */
 	private function die_blocked() {

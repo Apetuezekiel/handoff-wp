@@ -15,11 +15,11 @@
  *      admin-ajax.php); the capability filter handles those.
  *
  * Plugin protection (plugin_action_links + admin_init intercept) lives in the
- * separate class-ch-plugin-protection.php file, not here.
+ * separate class-zsch-plugin-protection.php file, not here.
  *
  * RECURSION CONSTRAINT (brief § 3.4): The user_has_cap callback MUST NOT call
  * user_can() or current_user_can() — those re-trigger this filter and cause
- * infinite recursion. All user/capability checks use CH_Core's recursion-safe
+ * infinite recursion. All user/capability checks use ZSCH_Core's recursion-safe
  * helpers, which read wp_roles() directly.
  *
  * @package ClientHandoff
@@ -30,26 +30,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class CH_Enforcer
+ * Class ZSCH_Enforcer
  */
-class CH_Enforcer {
+class ZSCH_Enforcer {
 
 	/**
 	 * Screen ID of the plugin's own settings page.
 	 *
 	 * WordPress generates this ID from a top-level menu page registered with
-	 * the slug 'client-handoff' (add_menu_page). Must match what
-	 * class-ch-admin-settings.php registers. The settings page is always
+	 * the slug 'zicstack-client-handoff' (add_menu_page). Must match what
+	 * class-zsch-admin-settings.php registers. The settings page is always
 	 * permitted — it must never be blockable.
 	 */
-	const SETTINGS_SCREEN_ID = 'toplevel_page_client-handoff';
+	const SETTINGS_SCREEN_ID = 'toplevel_page_zicstack-client-handoff';
 
 	/**
 	 * Core set of always-permitted screen IDs.
 	 *
 	 * These screens are NEVER blocked by the screen guard, even if they appear
 	 * in a role's screen_blocklist (brief § 3.4 always-permitted set). Extended
-	 * at runtime via the 'client_handoff_permitted_screens' filter, which the
+	 * at runtime via the 'zsch_permitted_screens' filter, which the
 	 * dashboard class uses to add quick_link screen IDs when it is built.
 	 *
 	 * @var string[]
@@ -59,11 +59,11 @@ class CH_Enforcer {
 		'profile.php', // User profile — always reachable.
 	);
 
-	/** @var CH_Core */
+	/** @var ZSCH_Core */
 	private $core;
 
 	/**
-	 * @param CH_Core $core
+	 * @param ZSCH_Core $core
 	 */
 	public function __construct( $core ) {
 		$this->core = $core;
@@ -116,7 +116,7 @@ class CH_Enforcer {
 
 		// Lockout safeguards: admin roles, activate_plugins hard floor, ID 1,
 		// and multisite super-admins are all exempt from enforcement.
-		// These checks use CH_Core's recursion-safe helpers — no user_can() calls.
+		// These checks use ZSCH_Core's recursion-safe helpers — no user_can() calls.
 		if ( $this->core->is_exempt_from_enforcement( $user ) ) {
 			return $allcaps;
 		}
@@ -148,7 +148,7 @@ class CH_Enforcer {
 	 * so this method never runs for them — the capability filter handles those.
 	 *
 	 * The always-permitted set (index.php, profile.php, settings page, and any
-	 * IDs added via the 'client_handoff_permitted_screens' filter) is never
+	 * IDs added via the 'zsch_permitted_screens' filter) is never
 	 * blocked even if explicitly listed in a role's screen_blocklist.
 	 *
 	 * @param WP_Screen $screen Current screen object.
@@ -201,7 +201,7 @@ class CH_Enforcer {
 	 * The always-permitted set consists of:
 	 *   - The core set defined in $core_permitted (index.php, profile.php).
 	 *   - The plugin's own settings page (SETTINGS_SCREEN_ID constant).
-	 *   - Any IDs added via the 'client_handoff_permitted_screens' filter.
+	 *   - Any IDs added via the 'zsch_permitted_screens' filter.
 	 *     The dashboard class uses this filter to register quick_link screen IDs.
 	 *
 	 * @param string $screen_id
@@ -220,7 +220,7 @@ class CH_Enforcer {
 		 *
 		 * @param string[] $permitted Screen IDs that are always permitted.
 		 */
-		$permitted = apply_filters( 'client_handoff_permitted_screens', $permitted );
+		$permitted = apply_filters( 'zsch_permitted_screens', $permitted );
 
 		return in_array( $screen_id, (array) $permitted, true );
 	}

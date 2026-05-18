@@ -10,7 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class CH_Dashboard
+ * Class ZSCH_Dashboard
  *
  * Replaces the default WP dashboard for protected users with a purpose-built
  * widget (brief § 3.1).
@@ -26,7 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *      opt the dashboard sub-feature on or off independently.
  *
  *   3. Current user status must be 'protected' — checked via
- *      CH_Core::get_user_status($user), not is_protected_user().
+ *      ZSCH_Core::get_user_status($user), not is_protected_user().
  *      Reason: admin_roles members must keep the standard dashboard for
  *      site management. A user in BOTH protected_roles AND admin_roles
  *      resolves to status 'admin' by precedence and receives the standard
@@ -34,9 +34,9 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * GATING ASYMMETRY WITH THE COSMETIC LAYER
  *
- * The cosmetic layer (CH_Menu_Manager, CH_Admin_Bar, CH_Notifications) does
+ * The cosmetic layer (ZSCH_Menu_Manager, ZSCH_Admin_Bar, ZSCH_Notifications) does
  * NOT check admin status — it applies to all users in the relevant role maps.
- * CH_Dashboard explicitly does check admin status because dashboard
+ * ZSCH_Dashboard explicitly does check admin status because dashboard
  * replacement is an experience substitution, not a restriction, and admin
  * users actively need the standard dashboard to manage the site. This
  * asymmetry is intentional; document it here so it is not "fixed" later.
@@ -44,7 +44,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * PERMITTED-SCREENS FILTER — DEFERRED (Phase 4)
  *
  * The brief expects this class to register on the
- * 'client_handoff_permitted_screens' filter to add quick_link targets to the
+ * 'zsch_permitted_screens' filter to add quick_link targets to the
  * screen-guard allowlist. Deferred because the current quick_links data model
  * stores URLs, not screen IDs, and URL-to-screen-ID derivation is
  * non-trivial. A developer who adds a quick-link target to screen_blocklist
@@ -58,16 +58,16 @@ if ( ! defined( 'ABSPATH' ) ) {
  * proprietary data). Deferred until a strategy (filter hook or explicit
  * plugin detection) is agreed.
  */
-class CH_Dashboard {
+class ZSCH_Dashboard {
 
 	/** @var string Dashboard widget ID. */
-	const WIDGET_ID = 'ch_client_handoff_dashboard';
+	const WIDGET_ID = 'zsch_dashboard';
 
-	/** @var CH_Core */
+	/** @var ZSCH_Core */
 	private $core;
 
 	/**
-	 * @param CH_Core $core
+	 * @param ZSCH_Core $core
 	 */
 	public function __construct( $core ) {
 		$this->core = $core;
@@ -165,7 +165,7 @@ class CH_Dashboard {
 		// 1. Welcome message.
 		$welcome = isset( $config['welcome_message'] ) ? $config['welcome_message'] : '';
 		if ( '' !== $welcome ) {
-			echo '<div class="ch-widget-section ch-welcome-message">';
+			echo '<div class="zsch-widget-section zsch-welcome-message">';
 			echo wp_kses_post( $welcome );
 			echo '</div>';
 		}
@@ -174,12 +174,12 @@ class CH_Dashboard {
 		$quick_links = isset( $config['quick_links'] ) && is_array( $config['quick_links'] )
 			? $config['quick_links'] : array();
 		if ( ! empty( $quick_links ) ) {
-			echo '<div class="ch-widget-section">';
+			echo '<div class="zsch-widget-section">';
 			echo '<h3>' . esc_html( __( 'Quick Actions', 'zicstack-client-handoff' ) ) . '</h3>';
-			echo '<div class="ch-quick-links">';
+			echo '<div class="zsch-quick-links">';
 			foreach ( $quick_links as $link ) {
 				printf(
-					'<a class="ch-quick-link" href="%s"><span class="dashicons %s"></span> %s</a>',
+					'<a class="zsch-quick-link" href="%s"><span class="dashicons %s"></span> %s</a>',
 					esc_url( isset( $link['url'] )   ? $link['url']   : '#' ),
 					esc_attr( isset( $link['icon'] )  ? $link['icon']  : 'dashicons-admin-generic' ),
 					esc_html( isset( $link['label'] ) ? $link['label'] : '' )
@@ -194,7 +194,7 @@ class CH_Dashboard {
 			? $config['developer_contact'] : array();
 		$has_contact = ! empty( $contact['name'] ) || ! empty( $contact['email'] ) || ! empty( $contact['url'] );
 		if ( $has_contact ) {
-			echo '<div class="ch-widget-section ch-developer-contact">';
+			echo '<div class="zsch-widget-section zsch-developer-contact">';
 			echo '<h3>' . esc_html( __( 'Need Help?', 'zicstack-client-handoff' ) ) . '</h3>';
 			if ( ! empty( $contact['name'] ) ) {
 				echo '<p>' . esc_html( $contact['name'] ) . '</p>';
@@ -220,20 +220,20 @@ class CH_Dashboard {
 				? __( 'Secured (HTTPS)', 'zicstack-client-handoff' )
 				: __( 'Not secured', 'zicstack-client-handoff' );
 
-			echo '<div class="ch-widget-section ch-site-status">';
+			echo '<div class="zsch-widget-section zsch-site-status">';
 			echo '<h3>' . esc_html( __( 'Site Status', 'zicstack-client-handoff' ) ) . '</h3>';
-			echo '<div class="ch-site-status-grid">';
-			echo '<div class="ch-status-item">';
-			echo '<span class="ch-status-item__label">' . esc_html( __( 'WordPress version:', 'zicstack-client-handoff' ) ) . '</span>';
-			echo '<span class="ch-status-item__value">' . esc_html( get_bloginfo( 'version' ) ) . '</span>';
+			echo '<div class="zsch-site-status-grid">';
+			echo '<div class="zsch-status-item">';
+			echo '<span class="zsch-status-item__label">' . esc_html( __( 'WordPress version:', 'zicstack-client-handoff' ) ) . '</span>';
+			echo '<span class="zsch-status-item__value">' . esc_html( get_bloginfo( 'version' ) ) . '</span>';
 			echo '</div>';
-			echo '<div class="ch-status-item">';
-			echo '<span class="ch-status-item__label">' . esc_html( __( 'Security:', 'zicstack-client-handoff' ) ) . '</span>';
-			echo '<span class="ch-status-item__value">' . esc_html( $ssl_status ) . '</span>';
+			echo '<div class="zsch-status-item">';
+			echo '<span class="zsch-status-item__label">' . esc_html( __( 'Security:', 'zicstack-client-handoff' ) ) . '</span>';
+			echo '<span class="zsch-status-item__value">' . esc_html( $ssl_status ) . '</span>';
 			echo '</div>';
-			echo '<div class="ch-status-item">';
-			echo '<span class="ch-status-item__label">' . esc_html( __( 'Plugin updates pending:', 'zicstack-client-handoff' ) ) . '</span>';
-			echo '<span class="ch-status-item__value">' . esc_html( $plugin_updates ) . '</span>';
+			echo '<div class="zsch-status-item">';
+			echo '<span class="zsch-status-item__label">' . esc_html( __( 'Plugin updates pending:', 'zicstack-client-handoff' ) ) . '</span>';
+			echo '<span class="zsch-status-item__value">' . esc_html( $plugin_updates ) . '</span>';
 			echo '</div>';
 			echo '</div>';
 			echo '</div>';
@@ -291,14 +291,14 @@ class CH_Dashboard {
 		}
 
 		if ( empty( $activity ) ) {
-			echo '<div class="ch-widget-section ch-activity-feed">';
+			echo '<div class="zsch-widget-section zsch-activity-feed">';
 			echo '<h3>' . esc_html( __( 'Recent Activity', 'zicstack-client-handoff' ) ) . '</h3>';
-			echo '<p class="ch-empty-state">' . esc_html( __( 'No recent activity to show.', 'zicstack-client-handoff' ) ) . '</p>';
+			echo '<p class="zsch-empty-state">' . esc_html( __( 'No recent activity to show.', 'zicstack-client-handoff' ) ) . '</p>';
 			echo '</div>';
 			return;
 		}
 
-		echo '<div class="ch-widget-section ch-activity-feed">';
+		echo '<div class="zsch-widget-section zsch-activity-feed">';
 		echo '<h3>' . esc_html( __( 'Recent Activity', 'zicstack-client-handoff' ) ) . '</h3>';
 		echo '<ul>';
 		foreach ( $activity as $item ) {

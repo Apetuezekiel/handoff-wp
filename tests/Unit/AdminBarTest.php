@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for CH_Admin_Bar (admin bar simplification, cosmetic layer).
+ * Unit tests for ZSCH_Admin_Bar (admin bar simplification, cosmetic layer).
  *
  * WP_Mock limitation: add_action() is an expectation assertion only — the hook
  * pipeline is never fired. All tests call simplify_admin_bar() directly.
@@ -33,7 +33,7 @@ class AdminBarTest extends TestCase {
 
 	public function setUp(): void {
 		parent::setUp();
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 
 		global $wp_admin_bar;
 		$this->saved_admin_bar = $wp_admin_bar;
@@ -43,7 +43,7 @@ class AdminBarTest extends TestCase {
 		global $wp_admin_bar;
 		$wp_admin_bar = $this->saved_admin_bar;
 
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		parent::tearDown();
 	}
 
@@ -52,14 +52,14 @@ class AdminBarTest extends TestCase {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build a CH_Core instance backed by the given saved config.
+	 * Build a ZSCH_Core instance backed by the given saved config.
 	 *
 	 * @param array $config
-	 * @return CH_Core
+	 * @return ZSCH_Core
 	 */
 	private function make_core( array $config = array() ) {
 		WP_Mock::userFunction( 'get_option', array( 'return' => $config ) );
-		return CH_Core::get_instance();
+		return ZSCH_Core::get_instance();
 	}
 
 	/**
@@ -124,7 +124,7 @@ class AdminBarTest extends TestCase {
 	 */
 	public function test_default_keep_set_removes_non_default_nodes() {
 		$core    = $this->make_core( $this->active_config() );
-		$admin   = new CH_Admin_Bar( $core );
+		$admin   = new ZSCH_Admin_Bar( $core );
 
 		WP_Mock::userFunction( 'wp_get_current_user', array(
 			'return' => $this->make_user( 5, array( 'subscriber' ) ),
@@ -164,7 +164,7 @@ class AdminBarTest extends TestCase {
 				'allowed_nodes' => array( 'site-name' ),
 			),
 		) ) );
-		$admin = new CH_Admin_Bar( $core );
+		$admin = new ZSCH_Admin_Bar( $core );
 
 		WP_Mock::userFunction( 'wp_get_current_user', array(
 			'return' => $this->make_user( 5, array( 'subscriber' ) ),
@@ -192,7 +192,7 @@ class AdminBarTest extends TestCase {
 		$core = $this->make_core( $this->active_config( array(
 			'admin_bar' => array( 'simplify' => false, 'allowed_nodes' => array() ),
 		) ) );
-		$admin = new CH_Admin_Bar( $core );
+		$admin = new ZSCH_Admin_Bar( $core );
 
 		$bar = $this->make_admin_bar( array( 'wp-logo', 'site-name', 'my-account' ) );
 
@@ -210,7 +210,7 @@ class AdminBarTest extends TestCase {
 	 */
 	public function test_disabled_plugin_is_noop() {
 		$core  = $this->make_core( array( 'enabled' => false ) );
-		$admin = new CH_Admin_Bar( $core );
+		$admin = new ZSCH_Admin_Bar( $core );
 
 		$bar = $this->make_admin_bar( array( 'wp-logo', 'site-name', 'my-account' ) );
 
@@ -229,7 +229,7 @@ class AdminBarTest extends TestCase {
 	 */
 	public function test_non_protected_user_is_noop() {
 		$core  = $this->make_core( $this->active_config() ); // protected_roles=['subscriber']
-		$admin = new CH_Admin_Bar( $core );
+		$admin = new ZSCH_Admin_Bar( $core );
 
 		WP_Mock::userFunction( 'wp_get_current_user', array(
 			'return' => $this->make_user( 5, array( 'author' ) ), // author not in protected_roles
@@ -260,7 +260,7 @@ class AdminBarTest extends TestCase {
 			'protected_roles' => array( 'subscriber' ),
 			'admin_roles'     => array( 'editor' ),
 		) ) );
-		$admin = new CH_Admin_Bar( $core );
+		$admin = new ZSCH_Admin_Bar( $core );
 
 		// User holds both 'subscriber' (protected) and 'editor' (admin_role).
 		// is_protected_user() checks protected_roles only — subscriber matches.
@@ -294,7 +294,7 @@ class AdminBarTest extends TestCase {
 			'protected_roles' => array( 'custom_admin' ),
 			'admin_roles'     => array(),
 		) ) );
-		$admin = new CH_Admin_Bar( $core );
+		$admin = new ZSCH_Admin_Bar( $core );
 
 		// custom_admin is in protected_roles and would grant activate_plugins in a
 		// real WP_Roles definition — but we do NOT mock wp_roles here, proving the

@@ -21,51 +21,51 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Manual includes — no Composer, no autoloader.
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-core.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-enforcer.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-plugin-protection.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-menu-manager.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-admin-bar.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-notifications.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-admin-settings.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-setup-flow.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-import-export.php';
-require_once plugin_dir_path( __FILE__ ) . 'includes/class-ch-dashboard.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-zsch-core.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-zsch-enforcer.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-zsch-plugin-protection.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-zsch-menu-manager.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-zsch-admin-bar.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-zsch-notifications.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-zsch-admin-settings.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-zsch-setup-flow.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-zsch-import-export.php';
+require_once plugin_dir_path( __FILE__ ) . 'includes/class-zsch-dashboard.php';
 
 // ---- Plugin constants -------------------------------------------------------
-// Defined after the include so they can mirror CH_Core class constants,
-// making CH_Core the single source of truth for option/hook names.
+// Defined after the include so they can mirror ZSCH_Core class constants,
+// making ZSCH_Core the single source of truth for option/hook names.
 
-define( 'CH_VERSION',          '0.1.0' );
-define( 'CH_PLUGIN_FILE',      __FILE__ );
-define( 'CH_PLUGIN_DIR',       plugin_dir_path( __FILE__ ) );
-define( 'CH_PLUGIN_URL',       plugin_dir_url( __FILE__ ) );
-define( 'CH_OPTION_CONFIG',    CH_Core::OPTION_CONFIG );
-define( 'CH_OPTION_LOG',       CH_Core::OPTION_LOG );
-define( 'CH_OPTION_CHECKLIST', CH_Core::OPTION_CHECKLIST );
-define( 'CH_CRON_PRUNE_LOG',   CH_Core::CRON_PRUNE_LOG );
-define( 'CH_CPT_HELP_NOTE',    CH_Core::CPT_HELP_NOTE );
-define( 'CH_TEXT_DOMAIN',      CH_Core::TEXT_DOMAIN );
+define( 'ZSCH_VERSION',          '0.1.0' );
+define( 'ZSCH_PLUGIN_FILE',      __FILE__ );
+define( 'ZSCH_PLUGIN_DIR',       plugin_dir_path( __FILE__ ) );
+define( 'ZSCH_PLUGIN_URL',       plugin_dir_url( __FILE__ ) );
+define( 'ZSCH_OPTION_CONFIG',    ZSCH_Core::OPTION_CONFIG );
+define( 'ZSCH_OPTION_LOG',       ZSCH_Core::OPTION_LOG );
+define( 'ZSCH_OPTION_CHECKLIST', ZSCH_Core::OPTION_CHECKLIST );
+define( 'ZSCH_CRON_PRUNE_LOG',   ZSCH_Core::CRON_PRUNE_LOG );
+define( 'ZSCH_CPT_HELP_NOTE',    ZSCH_Core::CPT_HELP_NOTE );
+define( 'ZSCH_TEXT_DOMAIN',      ZSCH_Core::TEXT_DOMAIN );
 
 // ---- Lifecycle hooks --------------------------------------------------------
-register_activation_hook( __FILE__, array( 'CH_Core', 'on_activation' ) );
-register_deactivation_hook( __FILE__, array( 'CH_Core', 'on_deactivation' ) );
+register_activation_hook( __FILE__, array( 'ZSCH_Core', 'on_activation' ) );
+register_deactivation_hook( __FILE__, array( 'ZSCH_Core', 'on_deactivation' ) );
 
 // ---- Feature hooks ----------------------------------------------------------
 // Enforcement hooks registered on plugins_loaded so WordPress is fully
 // bootstrapped before we read roles and user data. user_has_cap can fire
 // from plugins_loaded onward; current_screen fires later in the admin.
 add_action( 'plugins_loaded', static function () {
-	$core          = CH_Core::get_instance();
-	$enforcer      = new CH_Enforcer( $core );
-	$protection    = new CH_Plugin_Protection( $core );
-	$menu_manager  = new CH_Menu_Manager( $core );
-	$admin_bar     = new CH_Admin_Bar( $core );
-	$notifications = new CH_Notifications( $core );
-	$setup_flow    = new CH_Setup_Flow( $core );
-	$settings      = new CH_Admin_Settings( $core, $setup_flow );
-	$dashboard      = new CH_Dashboard( $core );
-	$import_export  = new CH_Import_Export( $core, $settings );
+	$core          = ZSCH_Core::get_instance();
+	$enforcer      = new ZSCH_Enforcer( $core );
+	$protection    = new ZSCH_Plugin_Protection( $core );
+	$menu_manager  = new ZSCH_Menu_Manager( $core );
+	$admin_bar     = new ZSCH_Admin_Bar( $core );
+	$notifications = new ZSCH_Notifications( $core );
+	$setup_flow    = new ZSCH_Setup_Flow( $core );
+	$settings      = new ZSCH_Admin_Settings( $core, $setup_flow );
+	$dashboard      = new ZSCH_Dashboard( $core );
+	$import_export  = new ZSCH_Import_Export( $core, $settings );
 	$enforcer->register_hooks();
 	$protection->register_hooks();
 	$menu_manager->register_hooks();

@@ -8,7 +8,7 @@
  *
  *   LOCKOUT SAFEGUARDS DO NOT APPLY HERE.
  *
- * The enforcement layer (CH_Enforcer, CH_Plugin_Protection) gates every action
+ * The enforcement layer (ZSCH_Enforcer, ZSCH_Plugin_Protection) gates every action
  * on is_exempt_from_enforcement() — a user in admin_roles or holding
  * activate_plugins bypasses all enforcement. The cosmetic layer does NOT.
  * A user in admin_roles still has menus hidden if their role appears in
@@ -45,9 +45,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class CH_Menu_Manager
+ * Class ZSCH_Menu_Manager
  */
-class CH_Menu_Manager {
+class ZSCH_Menu_Manager {
 
 	/**
 	 * Preset slug list for a "content manager" role.
@@ -81,11 +81,11 @@ class CH_Menu_Manager {
 		'tools.php',
 	);
 
-	/** @var CH_Core */
+	/** @var ZSCH_Core */
 	private $core;
 
 	/**
-	 * @param CH_Core $core
+	 * @param ZSCH_Core $core
 	 */
 	public function __construct( $core ) {
 		$this->core = $core;

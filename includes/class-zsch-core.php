@@ -14,19 +14,19 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Class CH_Core
+ * Class ZSCH_Core
  */
-class CH_Core {
+class ZSCH_Core {
 
 	// ---- Name constants — single source of truth ----------------------------
 	// Mirrored as plugin-level defines in zicstack-client-handoff.php so external code
 	// can reference them without coupling to this class.
 
-	const OPTION_CONFIG    = 'client_handoff_config';
-	const OPTION_LOG       = 'client_handoff_activity_log';
-	const OPTION_CHECKLIST = 'client_handoff_checklist';
-	const CRON_PRUNE_LOG   = 'client_handoff_prune_log';
-	const CPT_HELP_NOTE    = 'ch_help_note';
+	const OPTION_CONFIG    = 'zsch_config';
+	const OPTION_LOG       = 'zsch_activity_log';
+	const OPTION_CHECKLIST = 'zsch_checklist';
+	const CRON_PRUNE_LOG   = 'zsch_prune_log';
+	const CPT_HELP_NOTE    = 'zsch_help_note';
 	const TEXT_DOMAIN      = 'zicstack-client-handoff';
 
 	/**
@@ -90,7 +90,7 @@ class CH_Core {
 		),
 	);
 
-	/** @var CH_Core|null */
+	/** @var ZSCH_Core|null */
 	private static $instance = null;
 
 	/** @var array Full config, merged against DEFAULTS on load. */
@@ -101,7 +101,7 @@ class CH_Core {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * @return CH_Core
+	 * @return ZSCH_Core
 	 */
 	public static function get_instance() {
 		if ( null === self::$instance ) {
@@ -224,7 +224,7 @@ class CH_Core {
 	 * NOT a sanitization boundary. This method merges the incoming array against
 	 * DEFAULTS and persists the result, but it does not sanitize individual field
 	 * values (e.g. it will not strip tags from welcome_message or validate that
-	 * role slugs exist). Callers — specifically class-ch-admin-settings.php —
+	 * role slugs exist). Callers — specifically class-zsch-admin-settings.php —
 	 * are responsible for sanitizing every field before calling this method.
 	 *
 	 * @param array $new_config Sanitized config array from the settings form.
@@ -442,14 +442,14 @@ class CH_Core {
 			return false;
 		}
 
-		// CH_PLUGIN_FILE is defined in zicstack-client-handoff.php. Guard against test
+		// ZSCH_PLUGIN_FILE is defined in zicstack-client-handoff.php. Guard against test
 		// environments where the main plugin file is not loaded.
-		if ( ! defined( 'CH_PLUGIN_FILE' ) ) {
+		if ( ! defined( 'ZSCH_PLUGIN_FILE' ) ) {
 			return false;
 		}
 
 		$active_sitewide = get_site_option( 'active_sitewide_plugins', array() );
-		$basename        = plugin_basename( CH_PLUGIN_FILE );
+		$basename        = plugin_basename( ZSCH_PLUGIN_FILE );
 
 		return isset( $active_sitewide[ $basename ] );
 	}
@@ -472,7 +472,7 @@ class CH_Core {
 			// Network-wide activation is unsupported. Store a transient so the
 			// next admin page load can display an admin notice (the hook fires
 			// too early for direct admin_notices output).
-			set_transient( 'ch_network_activation_notice', true, MINUTE_IN_SECONDS );
+			set_transient( 'zsch_network_activation_notice', true, MINUTE_IN_SECONDS );
 			return;
 		}
 

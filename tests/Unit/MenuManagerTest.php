@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for CH_Menu_Manager.
+ * Unit tests for ZSCH_Menu_Manager.
  *
  * WP_Mock limitation: add_action() calls are expectation assertions, not a real
  * hook pipeline. All tests drive apply_menu_hiding() and get_admin_menu_snapshot()
@@ -34,7 +34,7 @@ class MenuManagerTest extends TestCase {
 
 	public function setUp(): void {
 		parent::setUp();
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 
 		global $menu, $submenu;
 		$this->saved_menu    = $menu;
@@ -46,7 +46,7 @@ class MenuManagerTest extends TestCase {
 		$menu    = $this->saved_menu;
 		$submenu = $this->saved_submenu;
 
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		parent::tearDown();
 	}
 
@@ -55,14 +55,14 @@ class MenuManagerTest extends TestCase {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build a CH_Core instance backed by the given saved config.
+	 * Build a ZSCH_Core instance backed by the given saved config.
 	 *
 	 * @param array $config
-	 * @return CH_Core
+	 * @return ZSCH_Core
 	 */
 	private function make_core( array $config = array() ) {
 		WP_Mock::userFunction( 'get_option', array( 'return' => $config ) );
-		return CH_Core::get_instance();
+		return ZSCH_Core::get_instance();
 	}
 
 	/**
@@ -96,7 +96,7 @@ class MenuManagerTest extends TestCase {
 			'enabled'     => true,
 			'menu_hiding' => array( 'hidden_menus' => array( 'subscriber' => array( 'plugins.php' ) ) ),
 		) );
-		$manager = new CH_Menu_Manager( $core );
+		$manager = new ZSCH_Menu_Manager( $core );
 
 		WP_Mock::userFunction( 'wp_get_current_user', array(
 			'return' => new WP_User( 1, array( 'subscriber' ) ),
@@ -124,7 +124,7 @@ class MenuManagerTest extends TestCase {
 			'enabled'     => true,
 			'menu_hiding' => array( 'hidden_menus' => array( 'subscriber' => array( 'options-general.php|options-writing.php' ) ) ),
 		) );
-		$manager = new CH_Menu_Manager( $core );
+		$manager = new ZSCH_Menu_Manager( $core );
 
 		WP_Mock::userFunction( 'wp_get_current_user', array(
 			'return' => new WP_User( 2, array( 'subscriber' ) ),
@@ -161,7 +161,7 @@ class MenuManagerTest extends TestCase {
 				),
 			) ),
 		) );
-		$manager = new CH_Menu_Manager( $core );
+		$manager = new ZSCH_Menu_Manager( $core );
 
 		WP_Mock::userFunction( 'wp_get_current_user', array(
 			'return' => new WP_User( 3, array( 'editor' ) ),
@@ -196,7 +196,7 @@ class MenuManagerTest extends TestCase {
 				'author'     => array( 'themes.php' ),
 			) ),
 		) );
-		$manager = new CH_Menu_Manager( $core );
+		$manager = new ZSCH_Menu_Manager( $core );
 
 		WP_Mock::userFunction( 'wp_get_current_user', array(
 			'return' => new WP_User( 4, array( 'subscriber', 'author' ) ),
@@ -223,7 +223,7 @@ class MenuManagerTest extends TestCase {
 	 */
 	public function test_disabled_plugin_skips_all_removal() {
 		$core    = $this->make_core( array( 'enabled' => false ) );
-		$manager = new CH_Menu_Manager( $core );
+		$manager = new ZSCH_Menu_Manager( $core );
 
 		$top_calls = array();
 		$sub_calls = array();
@@ -247,7 +247,7 @@ class MenuManagerTest extends TestCase {
 			'enabled'     => true,
 			'menu_hiding' => array( 'hidden_menus' => array( 'subscriber' => array( 'plugins.php' ) ) ),
 		) );
-		$manager = new CH_Menu_Manager( $core );
+		$manager = new ZSCH_Menu_Manager( $core );
 
 		WP_Mock::userFunction( 'wp_get_current_user', array(
 			'return' => new WP_User( 5, array( 'author' ) ),
@@ -279,7 +279,7 @@ class MenuManagerTest extends TestCase {
 			'admin_roles' => array( 'administrator' ),
 			'menu_hiding' => array( 'hidden_menus' => array( 'administrator' => array( 'plugins.php' ) ) ),
 		) );
-		$manager = new CH_Menu_Manager( $core );
+		$manager = new ZSCH_Menu_Manager( $core );
 
 		WP_Mock::userFunction( 'wp_get_current_user', array(
 			'return' => new WP_User( 1, array( 'administrator' ) ),
@@ -313,7 +313,7 @@ class MenuManagerTest extends TestCase {
 			'protected_roles' => array( 'subscriber' ),
 			'menu_hiding'     => array( 'hidden_menus' => array( 'shop_manager' => array( 'plugins.php' ) ) ),
 		) );
-		$manager = new CH_Menu_Manager( $core );
+		$manager = new ZSCH_Menu_Manager( $core );
 
 		WP_Mock::userFunction( 'wp_get_current_user', array(
 			'return' => new WP_User( 6, array( 'shop_manager' ) ),
@@ -343,7 +343,7 @@ class MenuManagerTest extends TestCase {
 	 */
 	public function test_get_admin_menu_snapshot_returns_structured_data() {
 		$core    = $this->make_core( array( 'enabled' => true ) );
-		$manager = new CH_Menu_Manager( $core );
+		$manager = new ZSCH_Menu_Manager( $core );
 
 		global $menu, $submenu;
 

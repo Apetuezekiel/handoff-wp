@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for CH_Admin_Settings (settings page, tab routing, sanitize callback).
+ * Unit tests for ZSCH_Admin_Settings (settings page, tab routing, sanitize callback).
  *
  * WP_Mock limitation: add_action() is an expectation assertion only — the hook
  * pipeline is never fired. All tab and sanitize tests call the methods directly.
@@ -39,13 +39,13 @@ class AdminSettingsTest extends TestCase {
 
 	public function setUp(): void {
 		parent::setUp();
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		$this->original_get = $_GET;
 		$_GET               = array();
 	}
 
 	public function tearDown(): void {
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		$_GET = $this->original_get;
 		parent::tearDown();
 	}
@@ -56,11 +56,11 @@ class AdminSettingsTest extends TestCase {
 
 	/**
 	 * @param array $config
-	 * @return CH_Core
+	 * @return ZSCH_Core
 	 */
 	private function make_core( array $config = array() ) {
 		WP_Mock::userFunction( 'get_option', array( 'return' => $config ) );
-		return CH_Core::get_instance();
+		return ZSCH_Core::get_instance();
 	}
 
 	/**
@@ -107,7 +107,7 @@ class AdminSettingsTest extends TestCase {
 		$this->expectNotToPerformAssertions();
 
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		WP_Mock::expectActionAdded( 'admin_menu', array( $settings, 'register_page' ) );
 		WP_Mock::expectActionAdded( 'admin_init', array( $settings, 'register_settings' ) );
@@ -120,7 +120,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_register_page_calls_add_menu_page_with_expected_args() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$calls = array();
 		WP_Mock::userFunction( 'add_menu_page', array(
@@ -135,7 +135,7 @@ class AdminSettingsTest extends TestCase {
 		$args = $calls[0];
 		// [0]=page_title [1]=menu_title [2]=cap [3]=slug [4]=cb [5]=icon [6]=pos
 		$this->assertSame( 'manage_options',        $args[2], 'capability must be manage_options' );
-		$this->assertSame( 'client-handoff',        $args[3], 'menu slug must be client-handoff' );
+		$this->assertSame( 'zicstack-client-handoff',        $args[3], 'menu slug must be zicstack-client-handoff' );
 		$this->assertEquals( array( $settings, 'render_page' ), $args[4], 'render callback must be render_page' );
 		$this->assertSame( 'dashicons-businessman', $args[5], 'icon must be dashicons-businessman' );
 		$this->assertSame( 80,                      $args[6], 'position must be 80' );
@@ -148,7 +148,7 @@ class AdminSettingsTest extends TestCase {
 		$_GET['tab'] = 'roles'; // activate gate so section/field mocks are needed.
 
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$reg_calls = array();
 		WP_Mock::userFunction( 'register_setting', array(
@@ -162,8 +162,8 @@ class AdminSettingsTest extends TestCase {
 		$settings->register_settings();
 
 		$this->assertCount( 1, $reg_calls, 'register_setting must be called exactly once' );
-		$this->assertSame( 'client_handoff_config', $reg_calls[0][0], 'option_group must be client_handoff_config' );
-		$this->assertSame( 'client_handoff_config', $reg_calls[0][1], 'option_name must be client_handoff_config' );
+		$this->assertSame( 'zsch_config', $reg_calls[0][0], 'option_group must be zsch_config' );
+		$this->assertSame( 'zsch_config', $reg_calls[0][1], 'option_name must be zsch_config' );
 		$this->assertArrayHasKey( 'sanitize_callback', $reg_calls[0][2], 'args must contain sanitize_callback' );
 		$this->assertEquals(
 			array( $settings, 'sanitize' ),
@@ -179,7 +179,7 @@ class AdminSettingsTest extends TestCase {
 		$_GET['tab'] = 'roles';
 
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$section_calls = array();
 		$field_calls   = array();
@@ -198,18 +198,18 @@ class AdminSettingsTest extends TestCase {
 		$settings->register_settings();
 
 		$this->assertCount( 1, $section_calls, 'add_settings_section must be called once on roles tab' );
-		$this->assertSame( 'client-handoff-roles', $section_calls[0][3],
-			'section must be registered to page client-handoff-roles' );
+		$this->assertSame( 'zicstack-client-handoff-roles', $section_calls[0][3],
+			'section must be registered to page zicstack-client-handoff-roles' );
 
 		$this->assertCount( 2, $field_calls, 'add_settings_field must be called twice on roles tab' );
 		foreach ( $field_calls as $i => $field_args ) {
-			$this->assertSame( 'client-handoff-roles', $field_args[3],
-				"field call $i must target page client-handoff-roles" );
+			$this->assertSame( 'zicstack-client-handoff-roles', $field_args[3],
+				"field call $i must target page zicstack-client-handoff-roles" );
 		}
 		// Verify the two field IDs.
 		$field_ids = array_column( $field_calls, 0 );
-		$this->assertContains( 'ch_protected_roles', $field_ids );
-		$this->assertContains( 'ch_admin_roles', $field_ids );
+		$this->assertContains( 'zsch_protected_roles', $field_ids );
+		$this->assertContains( 'zsch_admin_roles', $field_ids );
 	}
 
 	/**
@@ -225,7 +225,7 @@ class AdminSettingsTest extends TestCase {
 		$_GET['tab'] = 'help-notes';
 
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$reg_calls     = array();
 		$section_calls = array();
@@ -258,7 +258,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_render_page_wp_dies_when_user_lacks_manage_options() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		WP_Mock::userFunction( 'current_user_can', array(
 			'args'   => array( 'manage_options' ),
@@ -286,7 +286,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_get_active_tab_defaults_to_roles_when_tab_absent() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->assertSame( 'roles', $settings->get_active_tab() );
 	}
@@ -296,7 +296,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_get_active_tab_accepts_dashboard_tab() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$_GET['tab'] = 'dashboard';
 
@@ -308,9 +308,9 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_get_active_tab_accepts_every_declared_tab() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
-		foreach ( CH_Admin_Settings::TABS as $tab ) {
+		foreach ( ZSCH_Admin_Settings::TABS as $tab ) {
 			$_GET['tab'] = $tab;
 			$this->assertSame( $tab, $settings->get_active_tab(),
 				"Tab '$tab' should be accepted by get_active_tab()" );
@@ -322,7 +322,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_get_active_tab_rejects_unknown_tab() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$_GET['tab'] = 'hax0r';
 
@@ -334,7 +334,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_get_active_tab_rejects_empty_string() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$_GET['tab'] = '';
 
@@ -350,7 +350,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_keeps_valid_protected_roles() {
 		$core     = $this->make_core( $this->base_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_wp_roles( array(
 			'subscriber' => array( 'read' => true ),
@@ -370,7 +370,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_drops_invalid_protected_roles() {
 		$core     = $this->make_core( $this->base_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_wp_roles( array(
 			'subscriber' => array( 'read' => true ),
@@ -390,7 +390,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_keeps_valid_admin_roles() {
 		$core     = $this->make_core( $this->base_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_wp_roles( array(
 			'editor' => array( 'edit_posts' => true ),
@@ -409,7 +409,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_drops_invalid_admin_roles() {
 		$core     = $this->make_core( $this->base_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_wp_roles( array(
 			'editor' => array( 'edit_posts' => true ),
@@ -433,7 +433,7 @@ class AdminSettingsTest extends TestCase {
 	 *
 	 * get_option is mocked with a closure that routes by call count so that both
 	 * sub-cases share a single mock without WP_Mock expectation-stacking problems.
-	 * Each sub-case makes exactly 2 calls to get_option: one in CH_Core::__construct
+	 * Each sub-case makes exactly 2 calls to get_option: one in ZSCH_Core::__construct
 	 * (load_config) and one inside merge_into_current. floor(call/2) routes pairs.
 	 */
 	public function test_sanitize_preserves_saved_enabled_through_roles_tab_save() {
@@ -451,8 +451,8 @@ class AdminSettingsTest extends TestCase {
 		) );
 
 		// Sub-case 1: saved enabled=true must survive a Roles-tab save (calls 0–1).
-		$core1    = CH_Core::get_instance();
-		$settings = new CH_Admin_Settings( $core1 );
+		$core1    = ZSCH_Core::get_instance();
+		$settings = new ZSCH_Admin_Settings( $core1 );
 		WP_Mock::userFunction( 'wp_roles', array( 'return' => new WP_Roles( array() ) ) );
 		$result1 = $settings->sanitize( array( 'protected_roles' => array(), 'admin_roles' => array() ) );
 		$this->assertTrue(
@@ -461,9 +461,9 @@ class AdminSettingsTest extends TestCase {
 		);
 
 		// Sub-case 2: saved enabled=false must also survive (calls 2–3).
-		CH_Core::reset_instance();
-		$core2    = CH_Core::get_instance();
-		$settings = new CH_Admin_Settings( $core2 );
+		ZSCH_Core::reset_instance();
+		$core2    = ZSCH_Core::get_instance();
+		$settings = new ZSCH_Admin_Settings( $core2 );
 		WP_Mock::userFunction( 'wp_roles', array( 'return' => new WP_Roles( array() ) ) );
 		$result2 = $settings->sanitize( array( 'protected_roles' => array(), 'admin_roles' => array() ) );
 		$this->assertFalse(
@@ -511,7 +511,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_restrictions_keeps_valid_blocked_caps() {
 		$core     = $this->make_core( $this->enforcement_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_get_plugins( array() );
 
@@ -536,7 +536,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_restrictions_drops_unknown_blocked_caps() {
 		$core     = $this->make_core( $this->enforcement_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_get_plugins( array() );
 
@@ -562,7 +562,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_restrictions_keeps_installed_protected_plugins() {
 		$core     = $this->make_core( $this->enforcement_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_get_plugins( array(
 			'real/real.php'         => array( 'Name' => 'Real Plugin' ),
@@ -588,7 +588,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_restrictions_drops_uninstalled_protected_plugins() {
 		$core     = $this->make_core( $this->enforcement_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_get_plugins( array(
 			'real/real.php' => array( 'Name' => 'Real Plugin' ),
@@ -612,7 +612,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_restrictions_empty_arrays_produce_empty_arrays() {
 		$core     = $this->make_core( $this->enforcement_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_get_plugins( array() );
 
@@ -648,7 +648,7 @@ class AdminSettingsTest extends TestCase {
 
 		// Single saved config — same value on every get_option call.
 		$core     = $this->make_core( $saved );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_get_plugins( array() );
 
@@ -683,7 +683,7 @@ class AdminSettingsTest extends TestCase {
 		$_GET['tab'] = 'restrictions';
 
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$section_calls = array();
 		$field_calls   = array();
@@ -703,19 +703,19 @@ class AdminSettingsTest extends TestCase {
 
 		$this->assertCount( 1, $section_calls,
 			'add_settings_section must be called once on restrictions tab' );
-		$this->assertSame( 'client-handoff-restrictions', $section_calls[0][3],
-			'Section must target page client-handoff-restrictions' );
+		$this->assertSame( 'zicstack-client-handoff-restrictions', $section_calls[0][3],
+			'Section must target page zicstack-client-handoff-restrictions' );
 
 		$this->assertCount( 2, $field_calls,
 			'add_settings_field must be called twice on restrictions tab' );
 		foreach ( $field_calls as $i => $args ) {
-			$this->assertSame( 'client-handoff-restrictions', $args[3],
-				"Field call $i must target page client-handoff-restrictions" );
+			$this->assertSame( 'zicstack-client-handoff-restrictions', $args[3],
+				"Field call $i must target page zicstack-client-handoff-restrictions" );
 		}
 
 		$field_ids = array_column( $field_calls, 0 );
-		$this->assertContains( 'ch_blocked_caps',      $field_ids );
-		$this->assertContains( 'ch_protected_plugins',  $field_ids );
+		$this->assertContains( 'zsch_blocked_caps',      $field_ids );
+		$this->assertContains( 'zsch_protected_plugins',  $field_ids );
 	}
 
 	// ---- R8 -------------------------------------------------------------------
@@ -729,7 +729,7 @@ class AdminSettingsTest extends TestCase {
 		$_GET['tab'] = 'roles';
 
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$section_calls = array();
 		$field_calls   = array();
@@ -749,20 +749,20 @@ class AdminSettingsTest extends TestCase {
 
 		// Exactly one section, and it targets roles not restrictions.
 		$this->assertCount( 1, $section_calls );
-		$this->assertSame( 'client-handoff-roles', $section_calls[0][3],
-			'Section must target client-handoff-roles, not client-handoff-restrictions' );
+		$this->assertSame( 'zicstack-client-handoff-roles', $section_calls[0][3],
+			'Section must target zicstack-client-handoff-roles, not zicstack-client-handoff-restrictions' );
 
 		// Exactly two fields, both targeting the roles page.
 		$this->assertCount( 2, $field_calls );
 		foreach ( $field_calls as $i => $args ) {
-			$this->assertSame( 'client-handoff-roles', $args[3],
-				"Field call $i must target client-handoff-roles, not client-handoff-restrictions" );
+			$this->assertSame( 'zicstack-client-handoff-roles', $args[3],
+				"Field call $i must target zicstack-client-handoff-roles, not zicstack-client-handoff-restrictions" );
 		}
 
 		// Restrictions field IDs must not appear.
 		$field_ids = array_column( $field_calls, 0 );
-		$this->assertNotContains( 'ch_blocked_caps',     $field_ids );
-		$this->assertNotContains( 'ch_protected_plugins', $field_ids );
+		$this->assertNotContains( 'zsch_blocked_caps',     $field_ids );
+		$this->assertNotContains( 'zsch_protected_plugins', $field_ids );
 	}
 
 	// =========================================================================
@@ -815,7 +815,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_dashboard_enabled_and_status_flags_round_trip() {
 		$core     = $this->make_core( $this->base_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		// Sub-case A: flags present.
 		$result_a = $settings->sanitize( array(
@@ -850,7 +850,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_dashboard_welcome_message_strips_script_via_kses() {
 		$core     = $this->make_core( $this->base_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$result = $settings->sanitize( array(
 			'dashboard' => array(
@@ -883,7 +883,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_dashboard_drops_empty_quick_link_rows() {
 		$core     = $this->make_core( $this->base_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$result = $settings->sanitize( array(
 			'dashboard' => array(
@@ -918,7 +918,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_dashboard_keeps_populated_quick_link_rows() {
 		$core     = $this->make_core( $this->base_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$result = $settings->sanitize( array(
 			'dashboard' => array(
@@ -950,11 +950,11 @@ class AdminSettingsTest extends TestCase {
 	 * Sub-case A: all three keys present → values preserved.
 	 * Sub-case B: developer_contact is an empty array → all three keys still
 	 *             exist as empty strings. The saved shape must never have
-	 *             missing keys (CH_Dashboard reads them unconditionally).
+	 *             missing keys (ZSCH_Dashboard reads them unconditionally).
 	 */
 	public function test_sanitize_dashboard_developer_contact_preserves_three_keys() {
 		$core     = $this->make_core( $this->base_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		// Sub-case A: all keys provided.
 		$result_a = $settings->sanitize( array(
@@ -1004,7 +1004,7 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_dashboard_preserves_other_config_subkeys() {
 		$core     = $this->make_core( $this->dashboard_isolation_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$result = $settings->sanitize( array(
 			'dashboard' => array(
@@ -1030,13 +1030,13 @@ class AdminSettingsTest extends TestCase {
 
 	/**
 	 * D7 — on the dashboard tab, register_settings registers the correct
-	 * section and exactly five fields, all targeting 'client-handoff-dashboard'.
+	 * section and exactly five fields, all targeting 'zicstack-client-handoff-dashboard'.
 	 */
 	public function test_register_settings_with_dashboard_tab_registers_section_and_five_fields() {
 		$_GET['tab'] = 'dashboard';
 
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$reg_calls     = array();
 		$section_calls = array();
@@ -1060,31 +1060,31 @@ class AdminSettingsTest extends TestCase {
 
 		$settings->register_settings();
 
-		// Exactly one section targeting client-handoff-dashboard.
+		// Exactly one section targeting zicstack-client-handoff-dashboard.
 		$this->assertCount( 1, $section_calls, 'Exactly one section must be registered for the dashboard tab' );
 		$this->assertSame(
-			'client-handoff-dashboard',
+			'zicstack-client-handoff-dashboard',
 			$section_calls[0][3],
-			'Section must target client-handoff-dashboard'
+			'Section must target zicstack-client-handoff-dashboard'
 		);
 
-		// Exactly five fields, all targeting client-handoff-dashboard.
+		// Exactly five fields, all targeting zicstack-client-handoff-dashboard.
 		$this->assertCount( 5, $field_calls, 'Exactly five fields must be registered for the dashboard tab' );
 		foreach ( $field_calls as $i => $args ) {
 			$this->assertSame(
-				'client-handoff-dashboard',
+				'zicstack-client-handoff-dashboard',
 				$args[3],
-				"Field call $i must target client-handoff-dashboard"
+				"Field call $i must target zicstack-client-handoff-dashboard"
 			);
 		}
 
 		// The five expected field IDs are present.
 		$field_ids = array_column( $field_calls, 0 );
-		$this->assertContains( 'ch_dashboard_enabled',  $field_ids );
-		$this->assertContains( 'ch_welcome_message',    $field_ids );
-		$this->assertContains( 'ch_quick_links',        $field_ids );
-		$this->assertContains( 'ch_developer_contact',  $field_ids );
-		$this->assertContains( 'ch_show_site_status',   $field_ids );
+		$this->assertContains( 'zsch_dashboard_enabled',  $field_ids );
+		$this->assertContains( 'zsch_welcome_message',    $field_ids );
+		$this->assertContains( 'zsch_quick_links',        $field_ids );
+		$this->assertContains( 'zsch_developer_contact',  $field_ids );
+		$this->assertContains( 'zsch_show_site_status',   $field_ids );
 	}
 
 	// -------------------------------------------------------------------------
@@ -1093,7 +1093,7 @@ class AdminSettingsTest extends TestCase {
 
 	/**
 	 * D8 — on the dashboard tab, no roles or restrictions section/field calls
-	 * targeting 'client-handoff-roles' or 'client-handoff-restrictions' are made.
+	 * targeting 'zicstack-client-handoff-roles' or 'zicstack-client-handoff-restrictions' are made.
 	 *
 	 * Symmetric with R8 (restrictions tab must not register roles fields).
 	 */
@@ -1101,7 +1101,7 @@ class AdminSettingsTest extends TestCase {
 		$_GET['tab'] = 'dashboard';
 
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$section_calls = array();
 		$field_calls   = array();
@@ -1122,12 +1122,12 @@ class AdminSettingsTest extends TestCase {
 
 		// No section or field must target the roles or restrictions page slugs.
 		$section_pages = array_column( $section_calls, 3 );
-		$this->assertNotContains( 'client-handoff-roles',        $section_pages, 'Roles section must not be registered on the dashboard tab' );
-		$this->assertNotContains( 'client-handoff-restrictions', $section_pages, 'Restrictions section must not be registered on the dashboard tab' );
+		$this->assertNotContains( 'zicstack-client-handoff-roles',        $section_pages, 'Roles section must not be registered on the dashboard tab' );
+		$this->assertNotContains( 'zicstack-client-handoff-restrictions', $section_pages, 'Restrictions section must not be registered on the dashboard tab' );
 
 		$field_pages = array_column( $field_calls, 3 );
-		$this->assertNotContains( 'client-handoff-roles',        $field_pages, 'Roles fields must not be registered on the dashboard tab' );
-		$this->assertNotContains( 'client-handoff-restrictions', $field_pages, 'Restrictions fields must not be registered on the dashboard tab' );
+		$this->assertNotContains( 'zicstack-client-handoff-roles',        $field_pages, 'Roles fields must not be registered on the dashboard tab' );
+		$this->assertNotContains( 'zicstack-client-handoff-restrictions', $field_pages, 'Restrictions fields must not be registered on the dashboard tab' );
 	}
 
 	// =========================================================================
@@ -1135,38 +1135,38 @@ class AdminSettingsTest extends TestCase {
 	// =========================================================================
 
 	// -------------------------------------------------------------------------
-	// S9 — get_active_tab() honors ch_step for configurable steps only
+	// S9 — get_active_tab() honors zsch_step for configurable steps only
 	// -------------------------------------------------------------------------
 
 	/**
-	 * S9 — ch_step overrides the tab param for 'roles', 'dashboard',
+	 * S9 — zsch_step overrides the tab param for 'roles', 'dashboard',
 	 * 'restrictions'; 'activate' falls through to the standard tab logic.
 	 *
-	 * 'activate' is excluded from the ch_step routing because it has no
+	 * 'activate' is excluded from the zsch_step routing because it has no
 	 * Settings API sections to register — its form uses custom hidden inputs.
 	 */
-	public function test_get_active_tab_returns_ch_step_when_set() {
+	public function test_get_active_tab_returns_zsch_step_when_set() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		// 'restrictions' is a configurable step → must be returned directly.
-		$_GET['ch_step'] = 'restrictions';
+		$_GET['zsch_step'] = 'restrictions';
 		$this->assertSame( 'restrictions', $settings->get_active_tab(),
-			"ch_step='restrictions' must be returned as the active tab" );
+			"zsch_step='restrictions' must be returned as the active tab" );
 
 		// 'activate' is NOT a configurable step → must fall through to tab logic.
 		// No $_GET['tab'] set → defaults to 'roles'.
-		$_GET = array( 'ch_step' => 'activate' );
+		$_GET = array( 'zsch_step' => 'activate' );
 		$this->assertSame( 'roles', $settings->get_active_tab(),
-			"ch_step='activate' must fall through to the default tab ('roles')" );
+			"zsch_step='activate' must fall through to the default tab ('roles')" );
 	}
 
 	// -------------------------------------------------------------------------
-	// S10 — _ch_setup_complete sets enabled=true AND setup_completed=true
+	// S10 — _zsch_setup_complete sets enabled=true AND setup_completed=true
 	// -------------------------------------------------------------------------
 
 	/**
-	 * S10 — sanitize() with _ch_setup_complete=1 enables handoff mode and
+	 * S10 — sanitize() with _zsch_setup_complete=1 enables handoff mode and
 	 * marks the setup flow as complete.
 	 *
 	 * The activate form carries no field data, only the control marker. The
@@ -1175,22 +1175,22 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_setup_complete_marker_sets_enabled_and_setup_completed() {
 		$core     = $this->make_core( $this->base_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$result = $settings->sanitize( array(
-			'_ch_setup_complete' => '1',
+			'_zsch_setup_complete' => '1',
 		) );
 
-		$this->assertTrue( $result['enabled'],         'enabled must be true after _ch_setup_complete' );
-		$this->assertTrue( $result['setup_completed'], 'setup_completed must be true after _ch_setup_complete' );
+		$this->assertTrue( $result['enabled'],         'enabled must be true after _zsch_setup_complete' );
+		$this->assertTrue( $result['setup_completed'], 'setup_completed must be true after _zsch_setup_complete' );
 	}
 
 	// -------------------------------------------------------------------------
-	// S11 — _ch_setup_dismiss sets setup_completed=true but leaves enabled alone
+	// S11 — _zsch_setup_dismiss sets setup_completed=true but leaves enabled alone
 	// -------------------------------------------------------------------------
 
 	/**
-	 * S11 — sanitize() with _ch_setup_dismiss=1 marks setup complete without
+	 * S11 — sanitize() with _zsch_setup_dismiss=1 marks setup complete without
 	 * enabling handoff mode.
 	 *
 	 * 'enabled' is intentionally absent from the partial — merge_into_current
@@ -1199,23 +1199,23 @@ class AdminSettingsTest extends TestCase {
 	 */
 	public function test_sanitize_setup_dismiss_marker_sets_setup_completed_only() {
 		$core     = $this->make_core( $this->base_config() );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$result = $settings->sanitize( array(
-			'_ch_setup_dismiss' => '1',
+			'_zsch_setup_dismiss' => '1',
 		) );
 
 		$this->assertTrue( $result['setup_completed'],
-			'setup_completed must be true after _ch_setup_dismiss' );
+			'setup_completed must be true after _zsch_setup_dismiss' );
 		$this->assertFalse( $result['enabled'],
-			'enabled must remain false after _ch_setup_dismiss (dismiss does not enable)' );
+			'enabled must remain false after _zsch_setup_dismiss (dismiss does not enable)' );
 	}
 
 	// -------------------------------------------------------------------------
-	// R1 — _ch_setup_rerun resets setup_completed to false; enabled is preserved
+	// R1 — _zsch_setup_rerun resets setup_completed to false; enabled is preserved
 
 	/**
-	 * R1 — sanitize() with _ch_setup_rerun=1 sets setup_completed=false without
+	 * R1 — sanitize() with _zsch_setup_rerun=1 sets setup_completed=false without
 	 * touching enabled.
 	 *
 	 * Saved config has enabled=true and setup_completed=true (handoff active,
@@ -1230,15 +1230,15 @@ class AdminSettingsTest extends TestCase {
 			'setup_completed' => true,
 		);
 		$core     = $this->make_core( $saved );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$result = $settings->sanitize( array(
-			'_ch_setup_rerun' => '1',
+			'_zsch_setup_rerun' => '1',
 		) );
 
 		$this->assertFalse(
 			$result['setup_completed'],
-			'setup_completed must be reset to false after _ch_setup_rerun'
+			'setup_completed must be reset to false after _zsch_setup_rerun'
 		);
 		$this->assertTrue(
 			$result['enabled'],
@@ -1269,7 +1269,7 @@ class AdminSettingsTest extends TestCase {
 			'admin_roles'     => array(),
 		);
 		$core     = $this->make_core( $saved );
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		// Provide a valid wp_roles() stub so sanitize_roles can filter slugs.
 		$this->mock_wp_roles( array( 'subscriber' => array( 'read' => true ) ) );
@@ -1277,7 +1277,7 @@ class AdminSettingsTest extends TestCase {
 		$result = $settings->sanitize( array(
 			'protected_roles' => array( 'subscriber' ),
 			'admin_roles'     => array(),
-			// No _ch_setup_complete or _ch_setup_dismiss markers.
+			// No _zsch_setup_complete or _zsch_setup_dismiss markers.
 		) );
 
 		$this->assertFalse(

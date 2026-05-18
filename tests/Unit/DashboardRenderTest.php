@@ -1,7 +1,7 @@
 <?php
 /**
  * Phase 4 renderer consolidation — Pass C (final pass).
- * CH_Dashboard::render_widget section tests (C1–C6).
+ * ZSCH_Dashboard::render_widget section tests (C1–C6).
  *
  * WHAT IS TESTED
  *
@@ -53,11 +53,11 @@ class DashboardRenderTest extends TestCase {
 
 	public function setUp(): void {
 		parent::setUp();
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 	}
 
 	public function tearDown(): void {
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		parent::tearDown();
 	}
 
@@ -66,14 +66,14 @@ class DashboardRenderTest extends TestCase {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build a CH_Core instance backed by the given config array.
+	 * Build a ZSCH_Core instance backed by the given config array.
 	 *
 	 * @param array $config
-	 * @return CH_Core
+	 * @return ZSCH_Core
 	 */
-	private function make_core( array $config = array() ): CH_Core {
+	private function make_core( array $config = array() ): ZSCH_Core {
 		WP_Mock::userFunction( 'get_option', array( 'return' => $config ) );
-		return CH_Core::get_instance();
+		return ZSCH_Core::get_instance();
 	}
 
 	/**
@@ -94,7 +94,7 @@ class DashboardRenderTest extends TestCase {
 	 * asserting on activity-feed or site-status content.
 	 *
 	 * get_posts returns [] so the empty-state branch fires. is_ssl and
-	 * wp_get_update_data are mocked because CH_Core::DEFAULTS sets
+	 * wp_get_update_data are mocked because ZSCH_Core::DEFAULTS sets
 	 * show_site_status=true, meaning the site-status block runs on every
 	 * render_widget call unless explicitly disabled.
 	 *
@@ -134,7 +134,7 @@ class DashboardRenderTest extends TestCase {
 
 		$this->mock_activity_feed_noop();
 
-		$html = $this->capture( array( new CH_Dashboard( $core ), 'render_widget' ) );
+		$html = $this->capture( array( new ZSCH_Dashboard( $core ), 'render_widget' ) );
 
 		$this->assertStringContainsString(
 			'<p>Welcome</p>',
@@ -171,7 +171,7 @@ class DashboardRenderTest extends TestCase {
 
 		$this->mock_activity_feed_noop();
 
-		$html = $this->capture( array( new CH_Dashboard( $core ), 'render_widget' ) );
+		$html = $this->capture( array( new ZSCH_Dashboard( $core ), 'render_widget' ) );
 
 		$this->assertStringContainsString( 'Edit Posts',    $html, 'First quick-link label must appear' );
 		$this->assertStringContainsString( 'Media Library', $html, 'Second quick-link label must appear' );
@@ -209,7 +209,7 @@ class DashboardRenderTest extends TestCase {
 
 		$this->mock_activity_feed_noop();
 
-		$html = $this->capture( array( new CH_Dashboard( $core ), 'render_widget' ) );
+		$html = $this->capture( array( new ZSCH_Dashboard( $core ), 'render_widget' ) );
 
 		$this->assertStringContainsString( 'Ezekiel Apetu',    $html, 'Developer name must appear in the contact block' );
 		$this->assertStringContainsString( 'dev@example.com',  $html, 'Developer email must appear in the contact block' );
@@ -246,7 +246,7 @@ class DashboardRenderTest extends TestCase {
 			'return' => array( 'counts' => array( 'plugins' => 3 ) ),
 		) );
 
-		$html = $this->capture( array( new CH_Dashboard( $core ), 'render_widget' ) );
+		$html = $this->capture( array( new ZSCH_Dashboard( $core ), 'render_widget' ) );
 
 		// get_bloginfo('version') returns 'version' via bootstrap stub.
 		$this->assertStringContainsString(
@@ -303,7 +303,7 @@ class DashboardRenderTest extends TestCase {
 			'return' => array( 'counts' => array( 'plugins' => 0 ) ),
 		) );
 
-		$html = $this->capture( array( new CH_Dashboard( $core ), 'render_widget' ) );
+		$html = $this->capture( array( new ZSCH_Dashboard( $core ), 'render_widget' ) );
 
 		$this->assertStringContainsString(
 			'Sample Post',
@@ -334,7 +334,7 @@ class DashboardRenderTest extends TestCase {
 			'return' => array( 'counts' => array( 'plugins' => 0 ) ),
 		) );
 
-		$html = $this->capture( array( new CH_Dashboard( $core ), 'render_widget' ) );
+		$html = $this->capture( array( new ZSCH_Dashboard( $core ), 'render_widget' ) );
 
 		$this->assertStringContainsString(
 			'No recent activity to show.',

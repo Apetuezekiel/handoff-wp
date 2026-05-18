@@ -4,22 +4,22 @@
  *
  * SCOPE — sanitize_for_import only
  *
- * sanitize_for_import() is the sole new public API on CH_Admin_Settings
+ * sanitize_for_import() is the sole new public API on ZSCH_Admin_Settings
  * introduced by this pass. It aggregates the existing private per-tab
  * sanitizers, making it fully testable with the WP_Mock harness.
  *
  * DEFERRED — Phase 4
  *
- * CH_Import_Export::handle_export
+ * ZSCH_Import_Export::handle_export
  *   Streams a response with Content-Type / Content-Disposition headers and
  *   calls exit. Requires an integration harness; untestable under WP_Mock.
  *
- * CH_Import_Export::handle_import
+ * ZSCH_Import_Export::handle_import
  *   Involves $_FILES access, check_admin_referer(), wp_safe_redirect(), and
  *   exit. Mockable with significant effort but deferred for consistency with
  *   the handler/renderer deferral policy established in previous passes.
  *
- * CH_Admin_Settings::render_export_import_section
+ * ZSCH_Admin_Settings::render_export_import_section
  *   HTML output; follows the same renderer-deferral pattern as the existing
  *   field renderers (Phase 4 sweep).
  *
@@ -43,11 +43,11 @@ class ImportExportTest extends TestCase {
 
 	public function setUp(): void {
 		parent::setUp();
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 	}
 
 	public function tearDown(): void {
-		CH_Core::reset_instance();
+		ZSCH_Core::reset_instance();
 		parent::tearDown();
 	}
 
@@ -56,14 +56,14 @@ class ImportExportTest extends TestCase {
 	// -------------------------------------------------------------------------
 
 	/**
-	 * Build a CH_Core instance backed by the given config array.
+	 * Build a ZSCH_Core instance backed by the given config array.
 	 *
 	 * @param array $config
-	 * @return CH_Core
+	 * @return ZSCH_Core
 	 */
-	private function make_core( array $config = array() ): CH_Core {
+	private function make_core( array $config = array() ): ZSCH_Core {
 		WP_Mock::userFunction( 'get_option', array( 'return' => $config ) );
-		return CH_Core::get_instance();
+		return ZSCH_Core::get_instance();
 	}
 
 	/**
@@ -98,7 +98,7 @@ class ImportExportTest extends TestCase {
 	 */
 	public function test_sanitize_for_import_validates_roles() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$this->mock_wp_roles( array(
 			'subscriber' => array( 'read' => true ),
@@ -136,7 +136,7 @@ class ImportExportTest extends TestCase {
 	 */
 	public function test_sanitize_for_import_validates_restrictions() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$real_cap    = 'install_plugins'; // in DEFAULTS
 		$invented    = 'invented_cap';    // not in DEFAULTS
@@ -182,7 +182,7 @@ class ImportExportTest extends TestCase {
 	 */
 	public function test_sanitize_for_import_validates_dashboard() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$result = $settings->sanitize_for_import( array(
 			'dashboard' => array(
@@ -225,7 +225,7 @@ class ImportExportTest extends TestCase {
 	 */
 	public function test_sanitize_for_import_preserves_top_level_scalars() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		// Sub-case A: native booleans.
 		$result_a = $settings->sanitize_for_import( array(
@@ -258,7 +258,7 @@ class ImportExportTest extends TestCase {
 	 */
 	public function test_sanitize_for_import_drops_unknown_keys() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$result = $settings->sanitize_for_import( array(
 			'malicious_payload' => 'DROP TABLE wp_options;',
@@ -284,13 +284,13 @@ class ImportExportTest extends TestCase {
 	/**
 	 * E6 — sanitize_for_import on an empty array returns an empty array.
 	 *
-	 * When passed to CH_Core::update_config, an empty array merges against
+	 * When passed to ZSCH_Core::update_config, an empty array merges against
 	 * DEFAULTS entirely — giving the "reset to defaults" behaviour. This is
 	 * the correct outcome of importing an empty JSON object ({}).
 	 */
 	public function test_sanitize_for_import_on_empty_input_returns_empty_array() {
 		$core     = $this->make_core();
-		$settings = new CH_Admin_Settings( $core );
+		$settings = new ZSCH_Admin_Settings( $core );
 
 		$result = $settings->sanitize_for_import( array() );
 
