@@ -216,10 +216,10 @@ class CH_Plugin_Protection {
 		$email     = isset( $contact['email'] ) ? $contact['email'] : '';
 		$url       = isset( $contact['url'] )   ? $contact['url']   : '';
 
-		$message = '<p>' . esc_html( __( 'You do not have access to this page.', 'client-handoff' ) ) . '</p>';
+		$message = '<p>' . esc_html( __( 'You do not have access to this page.', 'zicstack-client-handoff' ) ) . '</p>';
 
 		if ( $name || $email || $url ) {
-			$message .= '<p>' . esc_html( __( 'For assistance, contact:', 'client-handoff' ) ) . ' ';
+			$message .= '<p>' . esc_html( __( 'For assistance, contact:', 'zicstack-client-handoff' ) ) . ' ';
 
 			if ( $name && $email ) {
 				$message .= esc_html( $name ) . ' &mdash; <a href="mailto:' . esc_attr( $email ) . '">' . esc_html( $email ) . '</a>';
@@ -238,7 +238,7 @@ class CH_Plugin_Protection {
 
 		wp_die(
 			wp_kses_post( $message ),
-			esc_html( __( 'Access Restricted', 'client-handoff' ) ),
+			esc_html( __( 'Access Restricted', 'zicstack-client-handoff' ) ),
 			array( 'response' => 403 )
 		);
 	}

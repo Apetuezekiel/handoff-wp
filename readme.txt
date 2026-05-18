@@ -1,4 +1,4 @@
-=== Client Handoff ===
+=== Zicstack Client Handoff ===
 Contributors: ezekielapetu
 Tags: client handoff, client dashboard, simplified admin, agency tools, developer tools
 Requires at least: 6.0
@@ -14,7 +14,7 @@ Structured developer-to-client handoff for WordPress sites: guided setup, client
 
 When a developer hands off a WordPress site to a non-technical client, the standard admin interface presents features the client should not touch — plugin management, theme switching, code editors, core update controls — alongside nothing to orient them toward what they actually need to do. There is no built-in structure for that transition.
 
-Client Handoff addresses this through two mechanisms: a first-run setup flow that walks the developer through configuring the site for a client, and a runtime enforcement layer that limits what designated client roles can see and do. Configuration is stored as a single option and can be exported as JSON for reuse across multiple sites.
+Zicstack Client Handoff (by Zicstack) addresses this through two mechanisms: a first-run setup flow that walks the developer through configuring the site for a client, and a runtime enforcement layer that limits what designated client roles can see and do. Configuration is stored as a single option and can be exported as JSON for reuse across multiple sites.
 
 **What it does**
 
@@ -34,9 +34,9 @@ Client Handoff addresses this through two mechanisms: a first-run setup flow tha
 
 **Comparison with BrenWP Client Safe Mode**
 
-BrenWP Client Safe Mode is the established option in this space and focuses on depth of restriction — granular control over what client roles can access. Client Handoff focuses on the workflow layer above restrictions: the guided setup experience, the client-facing dashboard widget, and the JSON export/import for deploying the same configuration across multiple sites. The two plugins address different problems and can coexist if a developer wants both the workflow structure of Client Handoff and the restriction depth of Client Safe Mode.
+BrenWP Client Safe Mode is the established option in this space and focuses on depth of restriction — granular control over what client roles can access. Zicstack Client Handoff focuses on the workflow layer above restrictions: the guided setup experience, the client-facing dashboard widget, and the JSON export/import for deploying the same configuration across multiple sites. The two plugins address different problems and can coexist if a developer wants both the workflow structure of Zicstack Client Handoff and the restriction depth of Client Safe Mode.
 
-Client Handoff is for developers and agencies who hand off WordPress sites to non-technical clients and need a structured, repeatable process for that transition.
+Zicstack Client Handoff is for developers and agencies who hand off WordPress sites to non-technical clients and need a structured, repeatable process for that transition.
 
 == Installation ==
 
@@ -57,7 +57,7 @@ Four safeguards prevent permanent lockout. First, user ID 1 (the original admin 
 
 = Can this run alongside BrenWP Client Safe Mode? =
 
-Yes. The two plugins operate through different hooks and address different concerns. Client Handoff provides setup flow, dashboard widget, and JSON export/import. BrenWP Client Safe Mode provides deeper restriction controls. Running both is supported — verify the role and capability configuration in each plugin does not produce conflicting results for your specific setup.
+Yes. The two plugins operate through different hooks and address different concerns. Zicstack Client Handoff provides setup flow, dashboard widget, and JSON export/import. BrenWP Client Safe Mode provides deeper restriction controls. Running both is supported — verify the role and capability configuration in each plugin does not produce conflicting results for your specific setup.
 
 = What happens when I deactivate the plugin? =
 

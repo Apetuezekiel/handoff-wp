@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 class CH_Core {
 
 	// ---- Name constants — single source of truth ----------------------------
-	// Mirrored as plugin-level defines in client-handoff.php so external code
+	// Mirrored as plugin-level defines in zicstack-client-handoff.php so external code
 	// can reference them without coupling to this class.
 
 	const OPTION_CONFIG    = 'client_handoff_config';
@@ -27,7 +27,7 @@ class CH_Core {
 	const OPTION_CHECKLIST = 'client_handoff_checklist';
 	const CRON_PRUNE_LOG   = 'client_handoff_prune_log';
 	const CPT_HELP_NOTE    = 'ch_help_note';
-	const TEXT_DOMAIN      = 'client-handoff';
+	const TEXT_DOMAIN      = 'zicstack-client-handoff';
 
 	/**
 	 * Activation defaults — deliberately inert.
@@ -442,7 +442,7 @@ class CH_Core {
 			return false;
 		}
 
-		// CH_PLUGIN_FILE is defined in client-handoff.php. Guard against test
+		// CH_PLUGIN_FILE is defined in zicstack-client-handoff.php. Guard against test
 		// environments where the main plugin file is not loaded.
 		if ( ! defined( 'CH_PLUGIN_FILE' ) ) {
 			return false;
@@ -461,7 +461,7 @@ class CH_Core {
 	/**
 	 * Activation hook handler.
 	 *
-	 * Called by register_activation_hook() in client-handoff.php.
+	 * Called by register_activation_hook() in zicstack-client-handoff.php.
 	 * Writes the inert default config (only if no config exists yet) and
 	 * registers the activity-log pruning cron.
 	 *

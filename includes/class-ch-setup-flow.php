@@ -165,10 +165,10 @@ class CH_Setup_Flow {
 		$done_url = admin_url( 'admin.php?page=client-handoff' );
 
 		$titles = array(
-			'roles'        => __( 'Configure Roles', 'client-handoff' ),
-			'dashboard'    => __( 'Configure Dashboard', 'client-handoff' ),
-			'restrictions' => __( 'Configure Restrictions', 'client-handoff' ),
-			'activate'     => __( 'Activate Handoff Mode', 'client-handoff' ),
+			'roles'        => __( 'Configure Roles', 'zicstack-client-handoff' ),
+			'dashboard'    => __( 'Configure Dashboard', 'zicstack-client-handoff' ),
+			'restrictions' => __( 'Configure Restrictions', 'zicstack-client-handoff' ),
+			'activate'     => __( 'Activate Handoff Mode', 'zicstack-client-handoff' ),
 		);
 		$title = isset( $titles[ $step ] ) ? $titles[ $step ] : $step;
 		?>
@@ -180,7 +180,7 @@ class CH_Setup_Flow {
 				<div class="ch-page-header__text">
 					<h1><?php echo esc_html( sprintf(
 						/* translators: 1: current step number, 2: total steps */
-						__( 'Client Handoff Setup — Step %1$d of %2$d: %3$s', 'client-handoff' ),
+						__( 'Zicstack Client Handoff Setup — Step %1$d of %2$d: %3$s', 'zicstack-client-handoff' ),
 						$step_index,
 						$step_count,
 						$title
@@ -196,10 +196,10 @@ class CH_Setup_Flow {
 					$is_done   = $s_index < $step_index;
 					$is_active = $s === $step;
 					$s_titles  = array(
-						'roles'        => __( 'Roles', 'client-handoff' ),
-						'dashboard'    => __( 'Dashboard', 'client-handoff' ),
-						'restrictions' => __( 'Restrictions', 'client-handoff' ),
-						'activate'     => __( 'Activate', 'client-handoff' ),
+						'roles'        => __( 'Roles', 'zicstack-client-handoff' ),
+						'dashboard'    => __( 'Dashboard', 'zicstack-client-handoff' ),
+						'restrictions' => __( 'Restrictions', 'zicstack-client-handoff' ),
+						'activate'     => __( 'Activate', 'zicstack-client-handoff' ),
 					);
 					$s_label = isset( $s_titles[ $s ] ) ? $s_titles[ $s ] : ucfirst( $s );
 					$css_class = 'ch-stepper__step';
@@ -248,11 +248,11 @@ class CH_Setup_Flow {
 				<?php settings_fields( CH_Core::OPTION_CONFIG ); ?>
 				<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( $next_url ); ?>">
 				<?php do_settings_sections( $page_slug ); ?>
-				<?php submit_button( __( 'Save &amp; Continue', 'client-handoff' ) ); ?>
+				<?php submit_button( __( 'Save &amp; Continue', 'zicstack-client-handoff' ) ); ?>
 			</form>
 			<a class="ch-skip-link" href="<?php echo esc_url( $next_url ); ?>">
 				<span class="dashicons dashicons-arrow-right-alt2" style="font-size:14px;width:14px;height:14px;margin-top:2px;"></span>
-				<?php echo esc_html( __( 'Skip this step', 'client-handoff' ) ); ?>
+				<?php echo esc_html( __( 'Skip this step', 'zicstack-client-handoff' ) ); ?>
 			</a>
 		</div>
 		<?php
@@ -283,31 +283,31 @@ class CH_Setup_Flow {
 		<div class="ch-card">
 			<h2 class="ch-card__title">
 				<span class="dashicons dashicons-chart-bar"></span>
-				<?php echo esc_html( __( 'Configuration Summary', 'client-handoff' ) ); ?>
+				<?php echo esc_html( __( 'Configuration Summary', 'zicstack-client-handoff' ) ); ?>
 			</h2>
-			<p class="ch-card__description"><?php echo esc_html( __( 'Review your settings before activating handoff mode.', 'client-handoff' ) ); ?></p>
+			<p class="ch-card__description"><?php echo esc_html( __( 'Review your settings before activating handoff mode.', 'zicstack-client-handoff' ) ); ?></p>
 
 			<!-- Stat grid cards (counts) -->
 			<div class="ch-stat-grid">
 				<div class="ch-stat-card">
 					<span class="ch-stat-card__value"><?php echo esc_html( count( $protected_roles ) ); ?></span>
-					<span class="ch-stat-card__label"><?php echo esc_html( __( 'Protected roles:', 'client-handoff' ) ); ?></span>
+					<span class="ch-stat-card__label"><?php echo esc_html( __( 'Protected roles:', 'zicstack-client-handoff' ) ); ?></span>
 				</div>
 				<div class="ch-stat-card">
 					<span class="ch-stat-card__value"><?php echo esc_html( count( $admin_roles ) ); ?></span>
-					<span class="ch-stat-card__label"><?php echo esc_html( __( 'Admin roles:', 'client-handoff' ) ); ?></span>
+					<span class="ch-stat-card__label"><?php echo esc_html( __( 'Admin roles:', 'zicstack-client-handoff' ) ); ?></span>
 				</div>
 				<div class="ch-stat-card">
 					<span class="ch-stat-card__value"><?php echo esc_html( count( $blocked_caps ) ); ?></span>
-					<span class="ch-stat-card__label"><?php echo esc_html( __( 'Blocked capabilities:', 'client-handoff' ) ); ?></span>
+					<span class="ch-stat-card__label"><?php echo esc_html( __( 'Blocked capabilities:', 'zicstack-client-handoff' ) ); ?></span>
 				</div>
 				<div class="ch-stat-card">
 					<span class="ch-stat-card__value"><?php echo esc_html( count( $protected_plugins ) ); ?></span>
-					<span class="ch-stat-card__label"><?php echo esc_html( __( 'Protected plugins:', 'client-handoff' ) ); ?></span>
+					<span class="ch-stat-card__label"><?php echo esc_html( __( 'Protected plugins:', 'zicstack-client-handoff' ) ); ?></span>
 				</div>
 				<div class="ch-stat-card">
 					<span class="ch-stat-card__value"><?php echo $dashboard_enabled ? '✓' : '—'; ?></span>
-					<span class="ch-stat-card__label"><?php echo esc_html( __( 'Client dashboard:', 'client-handoff' ) ); ?></span>
+					<span class="ch-stat-card__label"><?php echo esc_html( __( 'Client dashboard:', 'zicstack-client-handoff' ) ); ?></span>
 				</div>
 			</div>
 
@@ -321,7 +321,7 @@ class CH_Setup_Flow {
 					       name="<?php echo esc_attr( CH_Core::OPTION_CONFIG ); ?>[_ch_setup_complete]"
 					       value="1">
 					<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( $done_url ); ?>">
-					<?php submit_button( __( 'Activate Handoff Mode', 'client-handoff' ), 'primary large', 'submit', false ); ?>
+					<?php submit_button( __( 'Activate Handoff Mode', 'zicstack-client-handoff' ), 'primary large', 'submit', false ); ?>
 				</form>
 
 				<!-- Dismiss form (mark complete without enabling) -->
@@ -331,7 +331,7 @@ class CH_Setup_Flow {
 					       name="<?php echo esc_attr( CH_Core::OPTION_CONFIG ); ?>[_ch_setup_dismiss]"
 					       value="1">
 					<input type="hidden" name="_wp_http_referer" value="<?php echo esc_attr( $done_url ); ?>">
-					<?php submit_button( __( 'Skip without activating', 'client-handoff' ), 'secondary', 'submit', false ); ?>
+					<?php submit_button( __( 'Skip without activating', 'zicstack-client-handoff' ), 'secondary', 'submit', false ); ?>
 				</form>
 			</div>
 		</div>

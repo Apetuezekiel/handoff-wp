@@ -85,7 +85,7 @@ class CH_Import_Export {
 		check_admin_referer( 'ch_export_config' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You do not have permission to perform this action.', 'client-handoff' ) );
+			wp_die( esc_html__( 'You do not have permission to perform this action.', 'zicstack-client-handoff' ) );
 		}
 
 		$config   = $this->core->get_config();
@@ -113,7 +113,7 @@ class CH_Import_Export {
 		check_admin_referer( 'ch_import_config' );
 
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You do not have permission to perform this action.', 'client-handoff' ) );
+			wp_die( esc_html__( 'You do not have permission to perform this action.', 'zicstack-client-handoff' ) );
 		}
 
 		$settings_url = admin_url( 'admin.php?page=client-handoff' );

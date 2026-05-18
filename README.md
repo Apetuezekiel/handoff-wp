@@ -1,4 +1,4 @@
-# Client Handoff
+# Zicstack Client Handoff
 
 ![CI](https://github.com/Apetuezekiel/handoff-wp/actions/workflows/ci.yml/badge.svg)
 
@@ -92,7 +92,7 @@ Configuration is stored in the `client_handoff_config` WordPress option as a sin
 ## Architecture
 
 ```
-client-handoff.php          Plugin entry — requires, constants, lifecycle hooks
+zicstack-client-handoff.php Plugin entry — requires, constants, lifecycle hooks
 │
 ├── includes/
 │   ├── class-ch-core.php               Singleton: config, role resolution, safeguards

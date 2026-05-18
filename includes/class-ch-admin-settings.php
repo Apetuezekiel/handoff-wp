@@ -107,8 +107,8 @@ class CH_Admin_Settings {
 	 */
 	public function register_page() {
 		add_menu_page(
-			__( 'Client Handoff', 'client-handoff' ),
-			__( 'Client Handoff', 'client-handoff' ),
+			__( 'Zicstack Client Handoff', 'zicstack-client-handoff' ),
+			__( 'Zicstack Client Handoff', 'zicstack-client-handoff' ),
 			'manage_options',
 			'client-handoff',
 			array( $this, 'render_page' ),
@@ -134,14 +134,14 @@ class CH_Admin_Settings {
 		if ( 'roles' === $this->get_active_tab() ) {
 			add_settings_section(
 				'ch_roles_section',
-				__( 'Role Configuration', 'client-handoff' ),
+				__( 'Role Configuration', 'zicstack-client-handoff' ),
 				null,
 				'client-handoff-roles'
 			);
 
 			add_settings_field(
 				'ch_protected_roles',
-				__( 'Protected Roles', 'client-handoff' ),
+				__( 'Protected Roles', 'zicstack-client-handoff' ),
 				array( $this, 'render_protected_roles_field' ),
 				'client-handoff-roles',
 				'ch_roles_section'
@@ -149,7 +149,7 @@ class CH_Admin_Settings {
 
 			add_settings_field(
 				'ch_admin_roles',
-				__( 'Admin Roles', 'client-handoff' ),
+				__( 'Admin Roles', 'zicstack-client-handoff' ),
 				array( $this, 'render_admin_roles_field' ),
 				'client-handoff-roles',
 				'ch_roles_section'
@@ -159,14 +159,14 @@ class CH_Admin_Settings {
 		if ( 'restrictions' === $this->get_active_tab() ) {
 			add_settings_section(
 				'ch_restrictions_section',
-				__( 'Restrictions', 'client-handoff' ),
+				__( 'Restrictions', 'zicstack-client-handoff' ),
 				null,
 				'client-handoff-restrictions'
 			);
 
 			add_settings_field(
 				'ch_blocked_caps',
-				__( 'Blocked Capabilities', 'client-handoff' ),
+				__( 'Blocked Capabilities', 'zicstack-client-handoff' ),
 				array( $this, 'render_blocked_caps_field' ),
 				'client-handoff-restrictions',
 				'ch_restrictions_section'
@@ -174,7 +174,7 @@ class CH_Admin_Settings {
 
 			add_settings_field(
 				'ch_protected_plugins',
-				__( 'Protected Plugins', 'client-handoff' ),
+				__( 'Protected Plugins', 'zicstack-client-handoff' ),
 				array( $this, 'render_protected_plugins_field' ),
 				'client-handoff-restrictions',
 				'ch_restrictions_section'
@@ -184,14 +184,14 @@ class CH_Admin_Settings {
 		if ( 'dashboard' === $this->get_active_tab() ) {
 			add_settings_section(
 				'ch_dashboard_section',
-				__( 'Client Dashboard', 'client-handoff' ),
+				__( 'Client Dashboard', 'zicstack-client-handoff' ),
 				null,
 				'client-handoff-dashboard'
 			);
 
 			add_settings_field(
 				'ch_dashboard_enabled',
-				__( 'Enable Dashboard', 'client-handoff' ),
+				__( 'Enable Dashboard', 'zicstack-client-handoff' ),
 				array( $this, 'render_dashboard_enabled_field' ),
 				'client-handoff-dashboard',
 				'ch_dashboard_section'
@@ -199,7 +199,7 @@ class CH_Admin_Settings {
 
 			add_settings_field(
 				'ch_welcome_message',
-				__( 'Welcome Message', 'client-handoff' ),
+				__( 'Welcome Message', 'zicstack-client-handoff' ),
 				array( $this, 'render_welcome_message_field' ),
 				'client-handoff-dashboard',
 				'ch_dashboard_section'
@@ -207,7 +207,7 @@ class CH_Admin_Settings {
 
 			add_settings_field(
 				'ch_quick_links',
-				__( 'Quick Links', 'client-handoff' ),
+				__( 'Quick Links', 'zicstack-client-handoff' ),
 				array( $this, 'render_quick_links_field' ),
 				'client-handoff-dashboard',
 				'ch_dashboard_section'
@@ -215,7 +215,7 @@ class CH_Admin_Settings {
 
 			add_settings_field(
 				'ch_developer_contact',
-				__( 'Developer Contact', 'client-handoff' ),
+				__( 'Developer Contact', 'zicstack-client-handoff' ),
 				array( $this, 'render_developer_contact_field' ),
 				'client-handoff-dashboard',
 				'ch_dashboard_section'
@@ -223,7 +223,7 @@ class CH_Admin_Settings {
 
 			add_settings_field(
 				'ch_show_site_status',
-				__( 'Show Site Status', 'client-handoff' ),
+				__( 'Show Site Status', 'zicstack-client-handoff' ),
 				array( $this, 'render_show_site_status_field' ),
 				'client-handoff-dashboard',
 				'ch_dashboard_section'
@@ -276,7 +276,7 @@ class CH_Admin_Settings {
 	 */
 	public function render_page() {
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_die( esc_html__( 'You do not have permission to access this page.', 'client-handoff' ) );
+			wp_die( esc_html__( 'You do not have permission to access this page.', 'zicstack-client-handoff' ) );
 			return;
 		}
 
@@ -294,8 +294,8 @@ class CH_Admin_Settings {
 			<div class="ch-page-header">
 				<span class="dashicons dashicons-businessman"></span>
 				<div class="ch-page-header__text">
-					<h1><?php echo esc_html( __( 'Client Handoff', 'client-handoff' ) ); ?></h1>
-					<p><?php echo esc_html( __( 'Configure and manage the client handoff experience.', 'client-handoff' ) ); ?></p>
+					<h1><?php echo esc_html( __( 'Zicstack Client Handoff', 'zicstack-client-handoff' ) ); ?></h1>
+					<p><?php echo esc_html( __( 'Configure and manage the client handoff experience.', 'zicstack-client-handoff' ) ); ?></p>
 				</div>
 			</div>
 
@@ -326,7 +326,7 @@ class CH_Admin_Settings {
 						do_settings_sections( 'client-handoff-dashboard' );
 						submit_button();
 					} else {
-						echo '<p>' . esc_html( __( 'This tab is coming soon.', 'client-handoff' ) ) . '</p>';
+						echo '<p>' . esc_html( __( 'This tab is coming soon.', 'zicstack-client-handoff' ) ) . '</p>';
 					}
 					?>
 				</form>
@@ -420,7 +420,7 @@ class CH_Admin_Settings {
 		$plugins     = get_plugins();
 
 		if ( empty( $plugins ) ) {
-			echo '<p>' . esc_html( __( 'No plugins installed.', 'client-handoff' ) ) . '</p>';
+			echo '<p>' . esc_html( __( 'No plugins installed.', 'zicstack-client-handoff' ) ) . '</p>';
 			return;
 		}
 
@@ -759,7 +759,7 @@ class CH_Admin_Settings {
 			'<label class="ch-toggle-row"><input type="checkbox" name="%s[dashboard][enabled]" value="1"%s> <span>%s</span></label>',
 			esc_attr( CH_Core::OPTION_CONFIG ),
 			$checked ? ' checked' : '',
-			esc_html( __( 'Replace the WordPress dashboard with the client dashboard widget', 'client-handoff' ) )
+			esc_html( __( 'Replace the WordPress dashboard with the client dashboard widget', 'zicstack-client-handoff' ) )
 		);
 	}
 
@@ -777,7 +777,7 @@ class CH_Admin_Settings {
 			<p class="description">%s</p>',
 			esc_attr( CH_Core::OPTION_CONFIG ),
 			esc_textarea( $value ),
-			esc_html( __( 'Basic HTML allowed (paragraphs, links, emphasis).', 'client-handoff' ) )
+			esc_html( __( 'Basic HTML allowed (paragraphs, links, emphasis).', 'zicstack-client-handoff' ) )
 		);
 	}
 
@@ -795,9 +795,9 @@ class CH_Admin_Settings {
 
 		echo '<table class="ch-quick-links-table">';
 		echo '<thead><tr>';
-		echo '<th>' . esc_html( __( 'Label', 'client-handoff' ) ) . '</th>';
-		echo '<th>' . esc_html( __( 'URL', 'client-handoff' ) ) . '</th>';
-		echo '<th>' . esc_html( __( 'Icon (Dashicons class)', 'client-handoff' ) ) . '</th>';
+		echo '<th>' . esc_html( __( 'Label', 'zicstack-client-handoff' ) ) . '</th>';
+		echo '<th>' . esc_html( __( 'URL', 'zicstack-client-handoff' ) ) . '</th>';
+		echo '<th>' . esc_html( __( 'Icon (Dashicons class)', 'zicstack-client-handoff' ) ) . '</th>';
 		echo '</tr></thead><tbody>';
 
 		for ( $i = 0; $i < 5; $i++ ) {
@@ -820,7 +820,7 @@ class CH_Admin_Settings {
 		}
 
 		echo '</tbody></table>';
-		echo '<p class="description">' . esc_html( __( 'Leave label and URL blank to omit a row. Dynamic add/remove is post-MVP.', 'client-handoff' ) ) . '</p>';
+		echo '<p class="description">' . esc_html( __( 'Leave label and URL blank to omit a row. Dynamic add/remove is post-MVP.', 'zicstack-client-handoff' ) ) . '</p>';
 	}
 
 	/**
@@ -838,19 +838,19 @@ class CH_Admin_Settings {
 		echo '<div class="ch-contact-grid">';
 		printf(
 			'<label class="ch-contact-grid__full">%s<input type="text" name="%s[dashboard][developer_contact][name]" value="%s" class="regular-text"></label>',
-			esc_html( __( 'Name', 'client-handoff' ) ),
+			esc_html( __( 'Name', 'zicstack-client-handoff' ) ),
 			esc_attr( CH_Core::OPTION_CONFIG ),
 			esc_attr( $name )
 		);
 		printf(
 			'<label>%s<input type="email" name="%s[dashboard][developer_contact][email]" value="%s" class="regular-text"></label>',
-			esc_html( __( 'Email', 'client-handoff' ) ),
+			esc_html( __( 'Email', 'zicstack-client-handoff' ) ),
 			esc_attr( CH_Core::OPTION_CONFIG ),
 			esc_attr( $email )
 		);
 		printf(
 			'<label>%s<input type="url" name="%s[dashboard][developer_contact][url]" value="%s" class="regular-text"></label>',
-			esc_html( __( 'Website URL', 'client-handoff' ) ),
+			esc_html( __( 'Website URL', 'zicstack-client-handoff' ) ),
 			esc_attr( CH_Core::OPTION_CONFIG ),
 			esc_attr( $url )
 		);
@@ -867,7 +867,7 @@ class CH_Admin_Settings {
 			'<label class="ch-toggle-row"><input type="checkbox" name="%s[dashboard][show_site_status]" value="1"%s> <span>%s</span></label>',
 			esc_attr( CH_Core::OPTION_CONFIG ),
 			$checked ? ' checked' : '',
-			esc_html( __( 'Show WordPress version, SSL status, and pending plugin updates', 'client-handoff' ) )
+			esc_html( __( 'Show WordPress version, SSL status, and pending plugin updates', 'zicstack-client-handoff' ) )
 		);
 	}
 
@@ -893,13 +893,13 @@ class CH_Admin_Settings {
 		// Success / error notices from a previous import.
 		if ( ! empty( $_GET['ch_import_success'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display routing; form submission goes through options.php with its own nonce.
 			echo '<div class="notice notice-success is-dismissible"><p>';
-			echo esc_html( __( 'Configuration imported successfully.', 'client-handoff' ) );
+			echo esc_html( __( 'Configuration imported successfully.', 'zicstack-client-handoff' ) );
 			echo '</p></div>';
 		} elseif ( ! empty( $_GET['ch_import_error'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display routing; form submission goes through options.php with its own nonce.
 			$reason = sanitize_key( $_GET['ch_import_error'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Display routing; form submission goes through options.php with its own nonce.
 			$msg    = 'parse' === $reason
-				? __( 'Import failed: the file could not be parsed as valid JSON.', 'client-handoff' )
-				: __( 'Import failed: invalid or oversized file upload.', 'client-handoff' );
+				? __( 'Import failed: the file could not be parsed as valid JSON.', 'zicstack-client-handoff' )
+				: __( 'Import failed: invalid or oversized file upload.', 'zicstack-client-handoff' );
 			echo '<div class="notice notice-error is-dismissible"><p>';
 			echo esc_html( $msg );
 			echo '</p></div>';
@@ -908,32 +908,32 @@ class CH_Admin_Settings {
 		<div class="ch-card">
 			<p class="ch-card__title">
 				<span class="dashicons dashicons-database-export"></span>
-				<?php echo esc_html( __( 'Export / Import Configuration', 'client-handoff' ) ); ?>
+				<?php echo esc_html( __( 'Export / Import Configuration', 'zicstack-client-handoff' ) ); ?>
 			</p>
-			<p class="ch-card__description"><?php echo esc_html( __( 'Export the current configuration as a JSON file, or import a previously exported file. Import overwrites all settings.', 'client-handoff' ) ); ?></p>
+			<p class="ch-card__description"><?php echo esc_html( __( 'Export the current configuration as a JSON file, or import a previously exported file. Import overwrites all settings.', 'zicstack-client-handoff' ) ); ?></p>
 
 			<div class="ch-io-grid">
 
 				<!-- Export card -->
 				<div class="ch-io-card">
-					<h3><span class="dashicons dashicons-upload"></span><?php echo esc_html( __( 'Export', 'client-handoff' ) ); ?></h3>
-					<p><?php echo esc_html( __( 'Download a JSON backup of the current settings.', 'client-handoff' ) ); ?></p>
+					<h3><span class="dashicons dashicons-upload"></span><?php echo esc_html( __( 'Export', 'zicstack-client-handoff' ) ); ?></h3>
+					<p><?php echo esc_html( __( 'Download a JSON backup of the current settings.', 'zicstack-client-handoff' ) ); ?></p>
 					<form method="post" action="<?php echo esc_url( $admin_post_url ); ?>">
 						<input type="hidden" name="action" value="ch_export_config">
 						<?php wp_nonce_field( 'ch_export_config' ); ?>
-						<?php submit_button( __( 'Export Configuration', 'client-handoff' ), 'secondary', 'ch-export-btn', false ); ?>
+						<?php submit_button( __( 'Export Configuration', 'zicstack-client-handoff' ), 'secondary', 'ch-export-btn', false ); ?>
 					</form>
 				</div>
 
 				<!-- Import card -->
 				<div class="ch-io-card">
-					<h3><span class="dashicons dashicons-download"></span><?php echo esc_html( __( 'Import', 'client-handoff' ) ); ?></h3>
-					<p><?php echo esc_html( __( 'Restore settings from a previously exported JSON file.', 'client-handoff' ) ); ?></p>
+					<h3><span class="dashicons dashicons-download"></span><?php echo esc_html( __( 'Import', 'zicstack-client-handoff' ) ); ?></h3>
+					<p><?php echo esc_html( __( 'Restore settings from a previously exported JSON file.', 'zicstack-client-handoff' ) ); ?></p>
 					<form method="post" action="<?php echo esc_url( $admin_post_url ); ?>" enctype="multipart/form-data">
 						<input type="hidden" name="action" value="ch_import_config">
 						<?php wp_nonce_field( 'ch_import_config' ); ?>
 						<input type="file" name="ch_config_file" accept=".json">
-						<?php submit_button( __( 'Import Configuration', 'client-handoff' ), 'secondary', 'ch-import-btn', false ); ?>
+						<?php submit_button( __( 'Import Configuration', 'zicstack-client-handoff' ), 'secondary', 'ch-import-btn', false ); ?>
 					</form>
 				</div>
 
@@ -967,15 +967,15 @@ class CH_Admin_Settings {
 		<div class="ch-card ch-card--amber">
 			<p class="ch-card__title">
 				<span class="dashicons dashicons-redo"></span>
-				<?php echo esc_html( __( 'Setup Wizard', 'client-handoff' ) ); ?>
+				<?php echo esc_html( __( 'Setup Wizard', 'zicstack-client-handoff' ) ); ?>
 			</p>
-			<p class="ch-card__description"><?php echo esc_html( __( 'Re-run the setup wizard to update your onboarding configuration.', 'client-handoff' ) ); ?></p>
+			<p class="ch-card__description"><?php echo esc_html( __( 'Re-run the setup wizard to update your onboarding configuration.', 'zicstack-client-handoff' ) ); ?></p>
 			<form method="post" action="<?php echo esc_url( admin_url( 'options.php' ) ); ?>">
 				<?php settings_fields( CH_Core::OPTION_CONFIG ); ?>
 				<input type="hidden"
 				       name="<?php echo esc_attr( CH_Core::OPTION_CONFIG ); ?>[_ch_setup_rerun]"
 				       value="1">
-				<?php submit_button( __( 'Re-run Setup', 'client-handoff' ), 'secondary' ); ?>
+				<?php submit_button( __( 'Re-run Setup', 'zicstack-client-handoff' ), 'secondary' ); ?>
 			</form>
 		</div>
 		<?php

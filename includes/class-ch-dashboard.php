@@ -137,7 +137,7 @@ class CH_Dashboard {
 		// Register our single replacement widget.
 		wp_add_dashboard_widget(
 			self::WIDGET_ID,
-			__( 'Client Dashboard', 'client-handoff' ),
+			__( 'Client Dashboard', 'zicstack-client-handoff' ),
 			array( $this, 'render_widget' )
 		);
 	}
@@ -175,7 +175,7 @@ class CH_Dashboard {
 			? $config['quick_links'] : array();
 		if ( ! empty( $quick_links ) ) {
 			echo '<div class="ch-widget-section">';
-			echo '<h3>' . esc_html( __( 'Quick Actions', 'client-handoff' ) ) . '</h3>';
+			echo '<h3>' . esc_html( __( 'Quick Actions', 'zicstack-client-handoff' ) ) . '</h3>';
 			echo '<div class="ch-quick-links">';
 			foreach ( $quick_links as $link ) {
 				printf(
@@ -195,7 +195,7 @@ class CH_Dashboard {
 		$has_contact = ! empty( $contact['name'] ) || ! empty( $contact['email'] ) || ! empty( $contact['url'] );
 		if ( $has_contact ) {
 			echo '<div class="ch-widget-section ch-developer-contact">';
-			echo '<h3>' . esc_html( __( 'Need Help?', 'client-handoff' ) ) . '</h3>';
+			echo '<h3>' . esc_html( __( 'Need Help?', 'zicstack-client-handoff' ) ) . '</h3>';
 			if ( ! empty( $contact['name'] ) ) {
 				echo '<p>' . esc_html( $contact['name'] ) . '</p>';
 			}
@@ -217,22 +217,22 @@ class CH_Dashboard {
 			$plugin_updates = isset( $update_data['counts']['plugins'] )
 				? (int) $update_data['counts']['plugins'] : 0;
 			$ssl_status     = is_ssl()
-				? __( 'Secured (HTTPS)', 'client-handoff' )
-				: __( 'Not secured', 'client-handoff' );
+				? __( 'Secured (HTTPS)', 'zicstack-client-handoff' )
+				: __( 'Not secured', 'zicstack-client-handoff' );
 
 			echo '<div class="ch-widget-section ch-site-status">';
-			echo '<h3>' . esc_html( __( 'Site Status', 'client-handoff' ) ) . '</h3>';
+			echo '<h3>' . esc_html( __( 'Site Status', 'zicstack-client-handoff' ) ) . '</h3>';
 			echo '<div class="ch-site-status-grid">';
 			echo '<div class="ch-status-item">';
-			echo '<span class="ch-status-item__label">' . esc_html( __( 'WordPress version:', 'client-handoff' ) ) . '</span>';
+			echo '<span class="ch-status-item__label">' . esc_html( __( 'WordPress version:', 'zicstack-client-handoff' ) ) . '</span>';
 			echo '<span class="ch-status-item__value">' . esc_html( get_bloginfo( 'version' ) ) . '</span>';
 			echo '</div>';
 			echo '<div class="ch-status-item">';
-			echo '<span class="ch-status-item__label">' . esc_html( __( 'Security:', 'client-handoff' ) ) . '</span>';
+			echo '<span class="ch-status-item__label">' . esc_html( __( 'Security:', 'zicstack-client-handoff' ) ) . '</span>';
 			echo '<span class="ch-status-item__value">' . esc_html( $ssl_status ) . '</span>';
 			echo '</div>';
 			echo '<div class="ch-status-item">';
-			echo '<span class="ch-status-item__label">' . esc_html( __( 'Plugin updates pending:', 'client-handoff' ) ) . '</span>';
+			echo '<span class="ch-status-item__label">' . esc_html( __( 'Plugin updates pending:', 'zicstack-client-handoff' ) ) . '</span>';
 			echo '<span class="ch-status-item__value">' . esc_html( $plugin_updates ) . '</span>';
 			echo '</div>';
 			echo '</div>';
@@ -292,14 +292,14 @@ class CH_Dashboard {
 
 		if ( empty( $activity ) ) {
 			echo '<div class="ch-widget-section ch-activity-feed">';
-			echo '<h3>' . esc_html( __( 'Recent Activity', 'client-handoff' ) ) . '</h3>';
-			echo '<p class="ch-empty-state">' . esc_html( __( 'No recent activity to show.', 'client-handoff' ) ) . '</p>';
+			echo '<h3>' . esc_html( __( 'Recent Activity', 'zicstack-client-handoff' ) ) . '</h3>';
+			echo '<p class="ch-empty-state">' . esc_html( __( 'No recent activity to show.', 'zicstack-client-handoff' ) ) . '</p>';
 			echo '</div>';
 			return;
 		}
 
 		echo '<div class="ch-widget-section ch-activity-feed">';
-		echo '<h3>' . esc_html( __( 'Recent Activity', 'client-handoff' ) ) . '</h3>';
+		echo '<h3>' . esc_html( __( 'Recent Activity', 'zicstack-client-handoff' ) ) . '</h3>';
 		echo '<ul>';
 		foreach ( $activity as $item ) {
 			$parent_id = isset( $item->post_parent ) ? (int) $item->post_parent : 0;

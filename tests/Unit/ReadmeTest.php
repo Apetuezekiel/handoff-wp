@@ -4,7 +4,7 @@
  *
  * APPROACH — static-content testing
  *
- * These tests read readme.txt (and client-handoff.php for T3) via
+ * These tests read readme.txt (and zicstack-client-handoff.php for T3) via
  * file_get_contents. Neither file is loaded or executed — this is pure
  * filesystem inspection, consistent with the UninstallTest.php pattern.
  *
@@ -33,14 +33,14 @@ class ReadmeTest extends TestCase {
 	/** @var string Cached readme.txt contents. */
 	private static $readme;
 
-	/** @var string Cached client-handoff.php contents. */
+	/** @var string Cached zicstack-client-handoff.php contents. */
 	private static $plugin_file;
 
 	public static function setUpBeforeClass(): void {
 		parent::setUpBeforeClass();
 		self::$root        = dirname( __DIR__, 2 );
 		self::$readme      = file_get_contents( self::$root . '/readme.txt' );
-		self::$plugin_file = file_get_contents( self::$root . '/client-handoff.php' );
+		self::$plugin_file = file_get_contents( self::$root . '/zicstack-client-handoff.php' );
 	}
 
 	// =========================================================================
@@ -76,7 +76,7 @@ class ReadmeTest extends TestCase {
 	 */
 	public function test_readme_txt_contains_all_required_header_fields() {
 		$required = array(
-			'=== Client Handoff ===',
+			'=== Zicstack Client Handoff ===',
 			'Contributors:',
 			'Tags:',
 			'Requires at least:',
@@ -105,7 +105,7 @@ class ReadmeTest extends TestCase {
 	// =========================================================================
 
 	/**
-	 * T3 — The Stable tag in readme.txt matches the Version in client-handoff.php.
+	 * T3 — The Stable tag in readme.txt matches the Version in zicstack-client-handoff.php.
 	 *
 	 * wordpress.org resolves which zip file to serve based on the Stable tag.
 	 * A mismatch between Stable tag and the plugin file's Version header causes
@@ -125,14 +125,14 @@ class ReadmeTest extends TestCase {
 		);
 		$this->assertNotEmpty(
 			$plugin_match,
-			'client-handoff.php must contain a Version field matching the pattern /Version: X.Y.Z/'
+			'zicstack-client-handoff.php must contain a Version field matching the pattern /Version: X.Y.Z/'
 		);
 
 		$this->assertSame(
 			$readme_match[1],
 			$plugin_match[1],
 			sprintf(
-				'Stable tag in readme.txt (%s) must match Version in client-handoff.php (%s)',
+				'Stable tag in readme.txt (%s) must match Version in zicstack-client-handoff.php (%s)',
 				$readme_match[1],
 				$plugin_match[1]
 			)
