@@ -11,3 +11,4 @@ composer.lock
 phpunit.xml
 tests/
 vendor/
+.wordpress-org/
