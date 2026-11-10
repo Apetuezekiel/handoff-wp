@@ -1,4 +1,4 @@
-=== Zicstack Client Handoff ===
+=== Client Handoff ===
 Contributors: ezekielapetu
 Tags: client handoff, client dashboard, simplified admin, agency tools, developer tools
 Requires at least: 6.0
@@ -12,16 +12,16 @@ Structured developer-to-client handoff for WordPress sites: guided setup, client
 
 == Description ==
 
-When a developer hands off a WordPress site to a non-technical client, the standard admin interface presents features the client should not touch — plugin management, theme switching, code editors, core update controls — alongside nothing to orient them toward what they actually need to do. There is no built-in structure for that transition.
+When a developer hands off a WordPress site to a non-technical client, the standard admin interface presents features the client should not touch (plugin management, theme switching, code editors, core update controls) alongside nothing to orient them toward what they actually need to do. There is no built-in structure for that transition.
 
-Zicstack Client Handoff (by Zicstack) addresses this through two mechanisms: a first-run setup flow that walks the developer through configuring the site for a client, and a runtime enforcement layer that limits what designated client roles can see and do. Configuration is stored as a single option and can be exported as JSON for reuse across multiple sites.
+Client Handoff addresses this through two mechanisms: a first-run setup flow that walks the developer through configuring the site for a client, and a runtime enforcement layer that limits what designated client roles can see and do. Configuration is stored as a single option and can be exported as JSON for reuse across multiple sites.
 
 **What it does**
 
 * Replaces the WordPress dashboard for designated client roles with a configurable widget containing a welcome message, quick links, developer contact information, and site status.
 * Hides admin menus, admin bar entries, and update nags for client roles without modifying their underlying role capabilities in the database.
-* Blocks deactivation and deletion of plugins the developer marks as protected — intercepting four distinct request shapes (single deactivate, bulk deactivate, single delete, bulk delete).
-* Filters eleven codebase-altering capabilities at runtime — including install_plugins, activate_plugins, edit_plugins, switch_themes, update_core, and six others — using WordPress's user_has_cap filter. No changes are written to the role definitions in the database.
+* Blocks deactivation and deletion of plugins the developer marks as protected, intercepting four distinct request shapes (single deactivate, bulk deactivate, single delete, bulk delete).
+* Filters eleven codebase-altering capabilities at runtime (including install_plugins, activate_plugins, edit_plugins, switch_themes, update_core, and six others) using WordPress's user_has_cap filter. No changes are written to the role definitions in the database.
 * Provides a four-step setup flow (Roles, Dashboard, Restrictions, Activate) that guides the developer through full configuration before handoff mode is enabled.
 * Exports and imports the full configuration as a JSON file for multi-site deployment.
 
@@ -34,9 +34,9 @@ Zicstack Client Handoff (by Zicstack) addresses this through two mechanisms: a f
 
 **Comparison with BrenWP Client Safe Mode**
 
-BrenWP Client Safe Mode is the established option in this space and focuses on depth of restriction — granular control over what client roles can access. Zicstack Client Handoff focuses on the workflow layer above restrictions: the guided setup experience, the client-facing dashboard widget, and the JSON export/import for deploying the same configuration across multiple sites. The two plugins address different problems and can coexist if a developer wants both the workflow structure of Zicstack Client Handoff and the restriction depth of Client Safe Mode.
+BrenWP Client Safe Mode is the established option in this space and focuses on depth of restriction: granular control over what client roles can access. Client Handoff focuses on the workflow layer above restrictions: the guided setup experience, the client-facing dashboard widget, and the JSON export/import for deploying the same configuration across multiple sites. The two plugins address different problems and can coexist if a developer wants both the workflow structure of Client Handoff and the restriction depth of Client Safe Mode.
 
-Zicstack Client Handoff is for developers and agencies who hand off WordPress sites to non-technical clients and need a structured, repeatable process for that transition.
+Client Handoff is for developers and agencies who hand off WordPress sites to non-technical clients and need a structured, repeatable process for that transition.
 
 == Installation ==
 
@@ -53,26 +53,26 @@ No. Capability filtering happens at runtime through WordPress's `user_has_cap` f
 
 = What happens if I lock myself out by mistake? =
 
-Four safeguards prevent permanent lockout. First, user ID 1 (the original admin account) is always exempt from all restrictions. Second, users assigned to a role listed under Admin Roles in the Roles tab bypass enforcement entirely — assigning your own role to Admin Roles restores full access. Third, the `activate_plugins` capability acts as a hard floor: any user who has it in their role's base capabilities is exempt, regardless of other settings. Fourth, WordPress super-admins on multisite are always exempt.
+Four safeguards prevent permanent lockout. First, user ID 1 (the original admin account) is always exempt from all restrictions. Second, users assigned to a role listed under Admin Roles in the Roles tab bypass enforcement entirely; assigning your own role to Admin Roles restores full access. Third, the `activate_plugins` capability acts as a hard floor: any user who has it in their role's base capabilities is exempt, regardless of other settings. Fourth, WordPress super-admins on multisite are always exempt.
 
 = Can this run alongside BrenWP Client Safe Mode? =
 
-Yes. The two plugins operate through different hooks and address different concerns. Zicstack Client Handoff provides setup flow, dashboard widget, and JSON export/import. BrenWP Client Safe Mode provides deeper restriction controls. Running both is supported — verify the role and capability configuration in each plugin does not produce conflicting results for your specific setup.
+Yes. The two plugins operate through different hooks and address different concerns. Client Handoff provides setup flow, dashboard widget, and JSON export/import. BrenWP Client Safe Mode provides deeper restriction controls. Running both is supported. Verify the role and capability configuration in each plugin does not produce conflicting results for your specific setup.
 
 = What happens when I deactivate the plugin? =
 
-Deactivating the plugin removes all runtime enforcement immediately — menus reappear, capability filters are gone, and the original WordPress dashboard returns. The saved configuration is preserved in the database so the plugin can be reactivated without reconfiguring from scratch. Uninstalling the plugin (Delete via the Plugins screen) removes the saved configuration, activity log, and developer checklist from the database entirely.
+Deactivating the plugin removes all runtime enforcement immediately: menus reappear, capability filters are gone, and the original WordPress dashboard returns. The saved configuration is preserved in the database so the plugin can be reactivated without reconfiguring from scratch. Uninstalling the plugin (Delete via the Plugins screen) removes the saved configuration, activity log, and developer checklist from the database entirely.
 
 = Does this work on a multisite network? =
 
-Single-site activation on a multisite network is supported — activate the plugin on a specific site and it works within that site's admin. Network-wide activation (activating from the Network Admin → Plugins screen) is not supported at this version. If network-wide activation is attempted, the plugin detects this and no-ops with an admin notice directing the developer to activate on individual sites instead.
+Single-site activation on a multisite network is supported: activate the plugin on a specific site and it works within that site's admin. Network-wide activation (activating from the Network Admin → Plugins screen) is not supported at this version. If network-wide activation is attempted, the plugin detects this and no-ops with an admin notice directing the developer to activate on individual sites instead.
 
 == Screenshots ==
 
-1. Setup flow — Step 1 of 4: Configure Roles. Select which roles are treated as client roles and which roles bypass enforcement.
-2. Settings page — Restrictions tab with blocked capabilities checklist and protected plugins selection.
-3. Client view — replacement dashboard widget with welcome message, quick links, and developer contact information.
-4. Settings page — Dashboard tab with welcome message editor and quick-link row configuration.
+1. Setup flow, Step 1 of 4: Configure Roles. Select which roles are treated as client roles and which roles bypass enforcement.
+2. Settings page: Restrictions tab with blocked capabilities checklist and protected plugins selection.
+3. Client view: replacement dashboard widget with welcome message, quick links, and developer contact information.
+4. Settings page: Dashboard tab with welcome message editor and quick-link row configuration.
 
 == Changelog ==
 
