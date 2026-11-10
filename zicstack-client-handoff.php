@@ -1,13 +1,13 @@
 <?php
 /**
- * Plugin Name:       Zicstack Client Handoff
+ * Plugin Name:       Client Handoff
  * Plugin URI:        https://github.com/Apetuezekiel/handoff-wp
  * Description:       Structured developer-to-client handoff: guided setup flow, client operational dashboard, contextual help notes, developer checklist, and enforced role-based restrictions.
  * Version:           0.1.0
  * Requires at least: 6.0
  * Requires PHP:      7.4
- * Author:            Ezekiel / Zicstack
- * Author URI:        https://zicstack.co
+ * Author:            Ezekiel Apetu
+ * Author URI:        https://github.com/Apetuezekiel
  * License:           GPL v2 or later
  * License URI:       https://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:       zicstack-client-handoff

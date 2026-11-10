@@ -180,7 +180,7 @@ class ZSCH_Setup_Flow {
 				<div class="zsch-page-header__text">
 					<h1><?php echo esc_html( sprintf(
 						/* translators: 1: current step number, 2: total steps */
-						__( 'Zicstack Client Handoff Setup — Step %1$d of %2$d: %3$s', 'zicstack-client-handoff' ),
+						__( 'Client Handoff Setup, Step %1$d of %2$d: %3$s', 'zicstack-client-handoff' ),
 						$step_index,
 						$step_count,
 						$title

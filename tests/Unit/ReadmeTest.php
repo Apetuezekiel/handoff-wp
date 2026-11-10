@@ -76,7 +76,7 @@ class ReadmeTest extends TestCase {
 	 */
 	public function test_readme_txt_contains_all_required_header_fields() {
 		$required = array(
-			'=== Zicstack Client Handoff ===',
+			'=== Client Handoff ===',
 			'Contributors:',
 			'Tags:',
 			'Requires at least:',

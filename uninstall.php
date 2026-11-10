@@ -1,6 +1,6 @@
 <?php
 /**
- * Uninstall — removes all data created by Zicstack Client Handoff.
+ * Uninstall — removes all data created by Client Handoff.
  *
  * Runs as a standalone file; MUST NOT require or depend on any class-zsch-* file
  * (brief Constraint 11.6). Option names are hard-coded here for the same reason.

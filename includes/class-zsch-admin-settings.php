@@ -107,8 +107,8 @@ class ZSCH_Admin_Settings {
 	 */
 	public function register_page() {
 		add_menu_page(
-			__( 'Zicstack Client Handoff', 'zicstack-client-handoff' ),
-			__( 'Zicstack Client Handoff', 'zicstack-client-handoff' ),
+			__( 'Client Handoff', 'zicstack-client-handoff' ),
+			__( 'Client Handoff', 'zicstack-client-handoff' ),
 			'manage_options',
 			'zicstack-client-handoff',
 			array( $this, 'render_page' ),
@@ -294,7 +294,7 @@ class ZSCH_Admin_Settings {
 			<div class="zsch-page-header">
 				<span class="dashicons dashicons-businessman"></span>
 				<div class="zsch-page-header__text">
-					<h1><?php echo esc_html( __( 'Zicstack Client Handoff', 'zicstack-client-handoff' ) ); ?></h1>
+					<h1><?php echo esc_html( __( 'Client Handoff', 'zicstack-client-handoff' ) ); ?></h1>
 					<p><?php echo esc_html( __( 'Configure and manage the client handoff experience.', 'zicstack-client-handoff' ) ); ?></p>
 				</div>
 			</div>

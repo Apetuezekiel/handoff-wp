@@ -1,8 +1,8 @@
-# Zicstack Client Handoff
+# Client Handoff
 
 ![CI](https://github.com/Apetuezekiel/handoff-wp/actions/workflows/ci.yml/badge.svg)
 
-Zicstack Client Handoff is a WordPress plugin by Zicstack for structured developer-to-client handoff. It locks down the admin for non-technical clients without locking out the developer — enforced role-based restrictions, cosmetic simplification, and a clean operational dashboard.
+Client Handoff is a WordPress plugin for structured developer-to-client handoff. It locks down the admin for non-technical clients without locking out the developer, through enforced role-based restrictions, cosmetic simplification, and a clean operational dashboard.
 
 ## What it does
 
