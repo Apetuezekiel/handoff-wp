@@ -92,7 +92,7 @@ class ZSCH_Admin_Settings {
 			'zicstack-client-handoff-admin',
 			plugin_dir_url( dirname( __FILE__ ) ) . 'assets/css/admin.css',
 			array(),
-			'1.0.0'
+			ZSCH_VERSION
 		);
 	}
 

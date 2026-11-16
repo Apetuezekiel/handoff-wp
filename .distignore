@@ -12,3 +12,5 @@ phpunit.xml
 tests/
 vendor/
 .wordpress-org/
+.gitignore
+README.md

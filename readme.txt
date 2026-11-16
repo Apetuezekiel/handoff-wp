@@ -2,9 +2,9 @@
 Contributors: ezekielapetu
 Tags: client handoff, client dashboard, simplified admin, agency tools, developer tools
 Requires at least: 6.0
-Tested up to: 6.9
+Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -76,6 +76,10 @@ Single-site activation on a multisite network is supported: activate the plugin 
 
 == Changelog ==
 
+= 0.1.1 =
+* Fixed: the Website URL field in the Developer Contact settings ran past the edge of the settings card on wide screens. The contact fields now fit their columns and stack into one column on small screens.
+* Tested with WordPress 7.1.
+
 = 0.1.0 =
 * Initial release.
 * Core: configuration loading, role resolution, lockout safeguards (user ID 1, admin_roles, activate_plugins floor, super-admin), recursion-safe capability helper.
@@ -88,6 +92,9 @@ Single-site activation on a multisite network is supported: activate the plugin 
 * Test suite: 148 unit tests across nine suites covering all pure-logic paths.
 
 == Upgrade Notice ==
+
+= 0.1.1 =
+Fixes the Developer Contact field layout on the settings screen. No settings change.
 
 = 0.1.0 =
 Initial release. No upgrade path required.
