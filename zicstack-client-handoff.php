@@ -3,7 +3,7 @@
  * Plugin Name:       Client Handoff
  * Plugin URI:        https://github.com/Apetuezekiel/handoff-wp
  * Description:       Structured developer-to-client handoff: guided setup flow, client operational dashboard, contextual help notes, developer checklist, and enforced role-based restrictions.
- * Version:           0.1.0
+ * Version:           0.1.1
  * Requires at least: 6.0
  * Requires PHP:      7.4
  * Author:            Ezekiel Apetu
@@ -36,7 +36,7 @@ require_once plugin_dir_path( __FILE__ ) . 'includes/class-zsch-dashboard.php';
 // Defined after the include so they can mirror ZSCH_Core class constants,
 // making ZSCH_Core the single source of truth for option/hook names.
 
-define( 'ZSCH_VERSION',          '0.1.0' );
+define( 'ZSCH_VERSION',          '0.1.1' );
 define( 'ZSCH_PLUGIN_FILE',      __FILE__ );
 define( 'ZSCH_PLUGIN_DIR',       plugin_dir_path( __FILE__ ) );
 define( 'ZSCH_PLUGIN_URL',       plugin_dir_url( __FILE__ ) );

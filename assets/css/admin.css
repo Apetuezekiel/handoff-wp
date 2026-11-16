@@ -355,11 +355,23 @@
    9. Developer contact grid
    ========================================================================== */
 
+/*
+ * minmax(0, 1fr) instead of 1fr: a bare 1fr track cannot shrink below its
+ * content's min-content width, and core's .regular-text gives each input a
+ * fixed 25em width, so the two tracks grew past max-width and pushed the
+ * Website URL input over the card edge.
+ */
 .zsch-contact-grid {
 	display: grid;
-	grid-template-columns: 1fr 1fr;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 12px 20px;
 	max-width: 540px;
+}
+
+@media (max-width: 782px) {
+	.zsch-contact-grid {
+		grid-template-columns: minmax(0, 1fr);
+	}
 }
 
 .zsch-contact-grid label {
@@ -374,6 +386,11 @@
 }
 
 .zsch-contact-grid label input {
+	box-sizing: border-box;
+	width: 100%;
+	max-width: 100%;
+	margin-left: 0;
+	margin-right: 0;
 	font-weight: 400;
 	text-transform: none;
 	letter-spacing: 0;
